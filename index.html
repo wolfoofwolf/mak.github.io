@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>我的溫濕度監控網站</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; text-align: center; margin-top: 50px; background: #e8f4f8; }
+        #data { font-size: 48px; color: #0066cc; margin: 50px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #0066cc; }
+    </style>
+</head>
+<body>
+    <h1>即時溫濕度監控（來自 ThingSpeak）</h1>
+    <div id="data">載入中，請稍等...</div>
+
+    <script>
+        // ===== 這裡改成你自己的 ThingSpeak 資料 =====
+        const channelID = 你的Channel_ID;              // 例如 1234567，從 ThingSpeak 頻道頁面抄
+        const readAPIKey = "你的READ_API_KEY";          // 從 ThingSpeak API Keys 頁面抄
+        // ===========================================
+
+        function updateData() {
+            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    const temp = data.field1 || "無資料";
+                    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
+                        .then(response => response.json())
+                        .then(data2 => {
+                            const humid = data2.field2 || "無資料";
+                            document.getElementById('data').innerHTML = 
+                                `<strong>溫度: ${temp} °C</strong><br><strong>濕度: ${humid} %</strong><br><small>更新時間: ${new Date().toLocaleString('zh-TW')}</small>`;
+                        });
+                })
+                .catch(err => {
+                    document.getElementById('data').innerHTML = "讀取失敗（檢查 API Key 或 ThingSpeak 是否有新資料）";
+                });
+        }
+
+        setInterval(updateData, 20000);  // 每 20 秒自動更新
+        updateData();  // 頁面打開時立刻載入
+    </script>
+</body>
+</html>
