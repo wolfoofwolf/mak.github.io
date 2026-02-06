@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>溫濕度與火焰監控</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; }
-        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; }
+        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; min-height:100vh; }
+        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
         .menu-btn { font-size:1.8rem; cursor:pointer; }
         .title { font-size:1.4rem; margin:0; }
         .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
@@ -19,15 +20,13 @@
         .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
         button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; }
         button:hover { background:#555; }
-        .auto-mode { background:#2196f3; }
-        .all-off { background:#757575; }
         .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
         .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8); }
         .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
         .sidebar a:hover { color:#f1f1f1; }
         .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
-        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
-        .modal-content { background:#161b22; margin:5% auto; width:90%; max-width:600px; border-radius:12px; padding:25px; }
+        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); }
+        .modal-content { background:#161b22; margin:10% auto; width:90%; max-width:500px; border-radius:12px; padding:25px; }
     </style>
 </head>
 <body>
@@ -45,18 +44,9 @@
 </div>
 
 <div class="container">
-    <div class="data-box">
-        <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
-    </div>
-
-    <div class="data-box">
-        <span class="humid" id="humidDisplay">Humidity: -- % 💧</span>
-    </div>
-
-    <div class="data-box" id="flameBox">
-        <span id="flameDisplay">Flame Status: -- 🔥</span>
-    </div>
-
+    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
+    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
+    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
     <div class="time" id="updateTime">Last updated: loading...</div>
 
     <div class="buttons">
@@ -68,54 +58,77 @@
 
 <div class="version">版本：v2.2 - 2026/02/06</div>
 
-<!-- Actions Modal -->
-<div id="actionsModal" class="modal">
+<!-- Notification Rules 小視窗 -->
+<div id="rulesModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2>Actions</h2>
-            <button onclick="closeActionsModal()" style="background:#f44336;">Close</button>
-        </div>
-        <button onclick="addSNMPTrap()" style="background:#238636; width:100%; margin-bottom:15px;">+ ADD New Action</button>
-        <table style="width:100%; border-collapse:collapse;">
-            <thead><tr><th>Type</th><th>Name</th><th style="text-align:right;">Actions</th></tr></thead>
-            <tbody id="actionList"></tbody>
-        </table>
+        <h2>Notification Rules</h2>
+        <p>選擇溫度範圍，達到後自動發 Email</p>
+        
+        <label><input type="checkbox" id="r1"> 0 - 20 °C</label><br>
+        <label><input type="checkbox" id="r2"> 20 - 30 °C</label><br>
+        <label><input type="checkbox" id="r3"> 30 - 35 °C</label><br><br>
+
+        <button onclick="saveRule()" style="background:#238636; width:100%; padding:12px;">Save & Enable</button>
+        <button onclick="closeRulesModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">Cancel</button>
     </div>
 </div>
 
 <script>
+// EmailJS 初始化（你的 Key）
+emailjs.init("DesLsbj7IJqknmZFq");
+
 // 側邊欄
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Actions
-function showActions() { closeMenu(); document.getElementById("actionsModal").style.display = "block"; renderActionList(); }
-function closeActionsModal() { document.getElementById("actionsModal").style.display = "none"; }
-
-let actions = [{ id:1, type:"SNMP Trap", name:"SNMP Trap Action 1" }];
-
-function renderActionList() {
-    let html = "";
-    actions.forEach(a => {
-        html += `<tr><td>${a.type}</td><td>${a.name}</td><td style="text-align:right;"><button onclick="testAction(${a.id})">TEST</button></td></tr>`;
-    });
-    document.getElementById("actionList").innerHTML = html;
-}
-
-function addSNMPTrap() {
-    const name = prompt("Action Name:", "SNMP Trap Action " + (actions.length + 1));
-    if (name) actions.push({ id:Date.now(), type:"SNMP Trap", name:name });
-    renderActionList();
-}
-
-function testAction(id) {
-    alert("Test Action sent! (Simulation)");
-}
-
 // Notification Rules
-function showNotificationRules() { closeMenu(); alert("Notification Rules 頁面（暫時模擬）\n\n之後可擴充規則設定"); }
+function showNotificationRules() {
+    closeMenu();
+    document.getElementById("rulesModal").style.display = "block";
+}
 
-// 數據更新
+function closeRulesModal() {
+    document.getElementById("rulesModal").style.display = "none";
+}
+
+function saveRule() {
+    const r1 = document.getElementById("r1").checked;
+    const r2 = document.getElementById("r2").checked;
+    const r3 = document.getElementById("r3").checked;
+
+    localStorage.setItem("rule_r1", r1);
+    localStorage.setItem("rule_r2", r2);
+    localStorage.setItem("rule_r3", r3);
+
+    alert("規則已儲存！當溫度達到勾選範圍時會自動發 Email");
+    closeRulesModal();
+}
+
+// 自動檢查溫度並發 Email
+function checkNotificationRule(temp) {
+    const r1 = localStorage.getItem("rule_r1") === "true";
+    const r2 = localStorage.getItem("rule_r2") === "true";
+    const r3 = localStorage.getItem("rule_r3") === "true";
+
+    let trigger = false;
+    let range = "";
+
+    if (r1 && temp < 20) { trigger = true; range = "0-20°C"; }
+    else if (r2 && temp >= 20 && temp < 30) { trigger = true; range = "20-30°C"; }
+    else if (r3 && temp >= 30 && temp <= 35) { trigger = true; range = "30-35°C"; }
+
+    if (trigger) {
+        emailjs.send("FYP", "FYP", {
+            to_email: "makmingkit144@gmail.com",
+            subject: "溫度警報觸發！",
+            message: `溫度已達到 ${range} (${temp}°C)\n請立即檢查系統！`
+        }).then(() => {
+            console.log("自動警報 Email 已發送！");
+        }).catch(err => console.error("自動發信失敗", err));
+    }
+}
+
+// 原有數據更新
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 
@@ -125,6 +138,9 @@ function updateData() {
         .then(d => {
             const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
             document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
+
+            // 檢查是否觸發 Notification Rule
+            if (temp !== '--') checkNotificationRule(parseFloat(temp));
         });
 
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
@@ -147,13 +163,6 @@ function updateData() {
         });
 
     document.getElementById('updateTime').textContent = `Last updated: ${new Date().toLocaleString('zh-TW')}`;
-}
-
-function controlLed(type, state) {
-    fetch(`http://192.168.1.140/led?type=${type}&state=${state}`)
-        .then(r => r.text())
-        .then(text => console.log("控制成功:", text))
-        .catch(err => console.error("控制失敗:", err));
 }
 
 setInterval(updateData, 20000);
