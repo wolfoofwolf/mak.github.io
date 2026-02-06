@@ -5,248 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>溫濕度與火焰監控</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, sans-serif;
-            background: #111;
-            color: #eee;
-            min-height: 100vh;
-        }
-        .top-bar {
-            background: #1a1a1a;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
-        }
-        .menu-btn {
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #eee;
-        }
-        .title {
-            font-size: 1.4rem;
-            margin: 0;
-        }
-        .container {
-            max-width: 500px;
-            margin: 30px auto;
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-        }
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            color: #ddd;
-        }
-        .data-box {
-            background: #222;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
-            font-size: 1.4rem;
-        }
-        .temp { color: #ff9800; }
-        .humid { color: #4fc3f7; }
-        .flame-normal { background: #222; color: #4caf50; }
-        .flame-alert  { background: #b71c1c; color: white; font-weight: bold; }
-        .time {
-            font-size: 0.9rem;
-            color: #888;
-            margin-top: 20px;
-        }
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #333;
-            color: white;
-            transition: all 0.2s;
-        }
-        button:hover { background: #555; }
-        button:active { transform: scale(0.98); }
-        .auto-mode { background: #2196f3; }
-        .all-off   { background: #757575; }
+        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; }
+        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
+        .menu-btn { font-size:1.8rem; cursor:pointer; }
+        .title { font-size:1.4rem; margin:0; }
+        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
+        .data-box { background:#222; border-radius:10px; padding:20px; margin:15px 0; font-size:1.4rem; }
+        .temp { color:#ff9800; } .humid { color:#4fc3f7; }
+        .flame-normal { background:#222; color:#4caf50; }
+        .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
+        .time { font-size:0.9rem; color:#888; margin-top:20px; }
+        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
+        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; }
+        button:hover { background:#555; }
 
-        /* 側邊欄 menu */
-        .sidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 1;
-            top: 0;
-            left: 0;
-            background-color: #111;
-            overflow-x: hidden;
-            transition: 0.5s;
-            padding-top: 60px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
-        }
-        .sidebar a {
-            padding: 15px 30px;
-            text-decoration: none;
-            font-size: 1.2rem;
-            color: #818181;
-            display: block;
-            transition: 0.3s;
-        }
-        .sidebar a:hover {
-            color: #f1f1f1;
-        }
-        .sidebar .closebtn {
-            position: absolute;
-            top: 0;
-            right: 25px;
-            font-size: 36px;
-            margin-left: 50px;
-        }
-        .version {
-            position: fixed;
-            bottom: 10px;
-            right: 20px;
-            font-size: 0.8rem;
-            color: #555;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
+        /* 側邊欄 */
+        .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.4s; padding-top:60px; }
+        .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
+        .sidebar a:hover { background:#222; color:white; }
+        .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
+
+        /* Actions 模擬頁面 */
+        .actions-modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); }
+        .actions-content { background:#1a1a1a; margin:5% auto; width:90%; max-width:700px; border-radius:12px; padding:20px; }
+        .action-row { display:flex; align-items:center; padding:12px; border-bottom:1px solid #333; }
+        .action-row:hover { background:#222; }
+        .btn-small { padding:6px 12px; font-size:0.9rem; margin-left:10px; }
     </style>
 </head>
 <body>
-    <!-- 頂部導航列 -->
-    <div class="top-bar">
-        <div class="menu-btn" onclick="openMenu()">☰</div>
-        <h1 class="title">溫濕度與火焰監控</h1>
-        <div></div> <!-- 佔位 -->
+
+<div class="top-bar">
+    <div class="menu-btn" onclick="openMenu()">☰</div>
+    <h1 class="title">溫濕度與火焰監控</h1>
+    <div></div>
+</div>
+
+<!-- 側邊欄 -->
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+    <a href="#" onclick="showNotificationRules()">Notification Rules</a>
+    <a href="#" onclick="showActions()">Action</a>
+</div>
+
+<div class="container">
+    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
+    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
+    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
+    <div class="time" id="updateTime">Last updated: loading...</div>
+
+    <div class="buttons">
+        <button onclick="updateData()">Refresh Data</button>
+        <button class="auto-mode" onclick="controlLed('auto', 1)">恢復自動模式</button>
+        <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
     </div>
+</div>
 
-    <!-- 側邊欄 menu -->
-    <div id="sidebar" class="sidebar">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
-        <a href="#" onclick="showNotificationRules()">Notification Rules</a>
-        <a href="#" onclick="showActions()">Action</a>
+<div class="version">版本：v1.7 - 2026/02/06</div>
+
+<!-- Actions 模擬頁面 -->
+<div id="actionsModal" class="actions-modal">
+    <div class="actions-content">
+        <h2 style="margin-top:0;">Actions</h2>
+        <div style="margin-bottom:15px;">
+            <input type="text" id="searchAction" placeholder="Search..." style="width:60%; padding:8px;">
+            <button onclick="addSNMPTrap()" style="background:#4caf50; float:right;">+ ADD</button>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#222; text-align:left;">
+                    <th style="padding:10px;">Action Type</th>
+                    <th style="padding:10px;">Action Name</th>
+                    <th style="padding:10px; width:180px;"></th>
+                </tr>
+            </thead>
+            <tbody id="actionList"></tbody>
+        </table>
+
+        <button onclick="closeActionsModal()" style="margin-top:20px; width:100%; padding:12px;">Close</button>
     </div>
+</div>
 
-    <!-- 主要內容 -->
-    <div class="container">
-        <div class="data-box">
-            <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
-        </div>
+<script>
+// ==================== 原有功能 ====================
+const channelID = 3252434;
+const readAPIKey = "PKQNQOPCZYREXB6C";
+const espIP = "http://192.168.1.140";
 
-        <div class="data-box">
-            <span class="humid" id="humidDisplay">Humidity: -- % 💧</span>
-        </div>
+function updateData() { /* 保持原樣 */ ... }   // 請保留你原本的 updateData 函數
 
-        <div class="data-box" id="flameBox">
-            <span id="flameDisplay">Flame Status: -- 🔥</span>
-        </div>
+function controlLed(type, state) { /* 保持原樣 */ ... }
 
-        <div class="time" id="updateTime">Last updated: loading...</div>
+// ==================== 新增 Actions Menu ====================
+function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
+function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-        <div class="buttons">
-            <button onclick="updateData()">Refresh Data</button>
-            <button class="auto-mode" onclick="controlLed('auto', 1)">恢復自動模式</button>
-            <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
-        </div>
-    </div>
+function showActions() {
+    closeMenu();
+    document.getElementById("actionsModal").style.display = "block";
+    renderActionList();
+}
 
-    <div class="version">版本：v1.6 - 2026/02/06</div>
+function closeActionsModal() {
+    document.getElementById("actionsModal").style.display = "none";
+}
 
-    <!-- 側邊欄控制 -->
-    <script>
-        function openMenu() {
-            document.getElementById("sidebar").style.width = "250px";
-        }
+// 模擬 Action 清單
+let actions = [
+    { id:1, type:"SNMP Trap", name:"SNMP Trap Action 1" }
+];
 
-        function closeMenu() {
-            document.getElementById("sidebar").style.width = "0";
-        }
+function renderActionList() {
+    let html = "";
+    actions.forEach(a => {
+        html += `
+            <tr class="action-row">
+                <td style="padding:12px;">${a.type}</td>
+                <td style="padding:12px;">${a.name}</td>
+                <td style="text-align:right; padding:12px;">
+                    <button class="btn-small" onclick="editAction(${a.id})">✏️</button>
+                    <button class="btn-small" style="background:#f44336;" onclick="deleteAction(${a.id})">🗑️</button>
+                    <button class="btn-small" onclick="duplicateAction(${a.id})">Duplicate</button>
+                    <button class="btn-small" style="background:#333;" onclick="testAction(${a.id})">TEST ACTION</button>
+                </td>
+            </tr>`;
+    });
+    document.getElementById("actionList").innerHTML = html;
+}
 
-        // 選項點擊事件（之後可擴充）
-        function showNotificationRules() {
-            alert("通知規則設定（之後可擴充：溫度 > 30°C 寄 email 等）");
-            closeMenu();
-        }
+function addSNMPTrap() {
+    const name = prompt("請輸入 SNMP Trap Action 名稱：", "SNMP Trap Action " + (actions.length + 1));
+    if (name) {
+        actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
+        renderActionList();
+    }
+}
 
-        function showActions() {
-            alert("動作清單（之後可擴充：自動開燈、警報等）");
-            closeMenu();
-        }
-    </script>
+function deleteAction(id) {
+    if (confirm("確定要刪除嗎？")) {
+        actions = actions.filter(a => a.id !== id);
+        renderActionList();
+    }
+}
 
-    <!-- 原有數據更新與控制 -->
-    <script>
-        const channelID = 3252434;
-        const readAPIKey = "PKQNQOPCZYREXB6C";
-        const espIP = "http://192.168.1.140";
+function editAction(id) {
+    const action = actions.find(a => a.id === id);
+    const newName = prompt("修改 Action 名稱：", action.name);
+    if (newName) {
+        action.name = newName;
+        renderActionList();
+    }
+}
 
-        function updateData() {
-            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
-                .then(r => r.json())
-                .then(d => {
-                    const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
-                    document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
-                });
+function duplicateAction(id) {
+    const action = actions.find(a => a.id === id);
+    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
+    renderActionList();
+}
 
-            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
-                .then(r => r.json())
-                .then(d => {
-                    const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
-                    document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
-                });
+function testAction(id) {
+    const action = actions.find(a => a.id === id);
+    alert(`正在測試：${action.name}\n\nSNMP Trap 已發送！（模擬成功）`);
+}
 
-            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
-                .then(r => r.json())
-                .then(d => {
-                    const flame = d.field3;
-                    let text = '--';
-                    let cls = 'flame-normal';
-                    if (flame == 0) {
-                        text = "Flame Detected! 🔥";
-                        cls = 'flame-alert';
-                    } else if (flame == 1) {
-                        text = "No Flame ✅";
-                        cls = 'flame-normal';
-                    }
-                    document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
-                    document.getElementById('flameBox').className = 'data-box ' + cls;
-                });
-
-            document.getElementById('updateTime').textContent = 
-                `Last updated: ${new Date().toLocaleString('zh-TW')}`;
-        }
-
-        function controlLed(type, state) {
-            fetch(`${espIP}/led?type=${type}&state=${state}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP 錯誤: ' + response.status);
-                    }
-                    return response.text();
-                })
-                .then(text => {
-                    console.log("控制成功: " + text);
-                })
-                .catch(err => {
-                    console.error("控制錯誤:", err);
-                });
-        }
-
-        setInterval(updateData, 20000);
-        updateData();
-    </script>
+// 點擊其他地方關閉 menu
+document.addEventListener("click", function(e) {
+    const sidebar = document.getElementById("sidebar");
+    if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+        sidebar.style.width = "0";
+    }
+});
+</script>
 </body>
 </html>
