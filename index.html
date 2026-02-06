@@ -78,7 +78,7 @@
         .dup-btn { background: #30363d; }
         .test-btn { background: #238636; }
         .clear-log-btn { background: #b71c1c; margin-top: 15px; padding: 10px 20px; }
-        /* Log Modal 樣式 */
+        /* Log Modal styles */
         .log-entry {
             padding: 10px; border-bottom: 1px solid #30363d; font-size: 0.95rem;
         }
@@ -147,12 +147,12 @@
             <h2 style="margin:0;">System Log</h2>
             <button onclick="closeLogModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
-        <button class="clear-log-btn" onclick="clearLog()">清除所有記錄</button>
+        <button class="clear-log-btn" onclick="clearLog()">Clear All Logs</button>
         <div id="logList" style="margin-top:15px; max-height:60vh; overflow-y:auto;"></div>
     </div>
 </div>
 
-<!-- 編輯 Email Modal -->
+<!-- Edit Email Modal -->
 <div id="editEmailModal" class="actions-modal">
     <div class="actions-content">
         <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
@@ -170,24 +170,24 @@
 </div>
 
 <script>
-// EmailJS 初始化
+// EmailJS initialization
 emailjs.init("DesLsbj7IJqknmZFq");
 
-// Log 系統
+// Log system
 let logEntries = JSON.parse(localStorage.getItem("systemLog")) || [];
 
 function addLog(action, details = "") {
     const entry = {
-        time: new Date().toLocaleString('zh-TW'),
+        time: new Date().toLocaleString('en-US'),
         action: action,
         details: details
     };
-    logEntries.unshift(entry); // 最新在最上面
+    logEntries.unshift(entry); // newest first
     localStorage.setItem("systemLog", JSON.stringify(logEntries));
 }
 
 function clearLog() {
-    if (confirm("確定要清除所有日誌記錄？")) {
+    if (confirm("Are you sure you want to clear all logs?")) {
         logEntries = [];
         localStorage.removeItem("systemLog");
         renderLogList();
@@ -198,7 +198,7 @@ function renderLogList() {
     const container = document.getElementById("logList");
     let html = "";
     if (logEntries.length === 0) {
-        html = "<p style='color:#888; text-align:center;'>目前沒有記錄</p>";
+        html = "<p style='color:#888; text-align:center;'>No logs yet</p>";
     } else {
         logEntries.forEach(entry => {
             html += `
@@ -212,7 +212,7 @@ function renderLogList() {
     container.innerHTML = html;
 }
 
-// 側邊欄控制
+// Sidebar controls
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
@@ -227,7 +227,7 @@ function closeLogModal() {
     document.getElementById("logModal").style.display = "none";
 }
 
-// Email 設定 Modal
+// Email settings modal
 function openEditEmailModal(id) {
     document.getElementById("editEmailModal").style.display = "block";
     window.currentEditId = id;
@@ -250,17 +250,17 @@ function saveActionEmail() {
     action.toEmail = to;
     saveActions();
     
-    addLog("修改 Email 設定", `動作: ${action.name} | From: ${from} | To: ${to}`);
-    alert("已儲存 Email 設定");
+    addLog("Updated Email Settings", `Action: ${action.name} | From: ${from} | To: ${to}`);
+    alert("Email settings saved");
     closeEditEmailModal();
 }
 
-// Actions 管理
+// Actions management
 function showActions() {
     closeMenu();
     document.getElementById("actionsModal").style.display = "block";
     renderActionList();
-    addLog("開啟 Actions 面板");
+    addLog("Opened Actions Panel");
 }
 
 function closeActionsModal() {
@@ -294,23 +294,23 @@ function renderActionList() {
 }
 
 function addSNMPTrap() {
-    const name = prompt("輸入 SNMP Trap 動作名稱:", "SNMP Trap Action " + (actions.length + 1));
+    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
         const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
         actions.push(newAction);
         saveActions();
         renderActionList();
-        addLog("新增動作", name);
+        addLog("Added Action", name);
     }
 }
 
 function deleteAction(id) {
-    if (confirm("確定刪除？")) {
+    if (confirm("Confirm delete?")) {
         const action = actions.find(a => a.id === id);
         actions = actions.filter(a => a.id !== id);
         saveActions();
         renderActionList();
-        addLog("刪除動作", action ? action.name : "未知");
+        addLog("Deleted Action", action ? action.name : "Unknown");
     }
 }
 
@@ -320,46 +320,45 @@ function duplicateAction(id) {
         actions.push({ 
             id: Date.now(), 
             type: action.type, 
-            name: action.name + " (複製)", 
+            name: action.name + " (Copy)", 
             fromEmail: action.fromEmail, 
             toEmail: action.toEmail 
         });
         saveActions();
         renderActionList();
-        addLog("複製動作", action.name);
+        addLog("Duplicated Action", action.name);
     }
 }
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
+    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
     if (!toEmail) return;
 
-    addLog("測試動作 - 準備發送 Email", `動作: ${action.name} | 收件人: ${toEmail}`);
+    addLog("Test Action - Preparing to send Email", `Action: ${action.name} | Recipient: ${toEmail}`);
 
     emailjs.send("FYP", "FYP", {
         to_email: toEmail,
-        subject: "SNMP Trap Alert: " + action.name + " (測試)",
+        subject: "SNMP Trap Alert: " + action.name + " (Test)",
         action_name: action.name,
         action_type: action.type,
-        time: new Date().toLocaleString('zh-TW'),
-        message: "這是一封測試通知。\n\n" +
+        time: new Date().toLocaleString('en-US'),
+        message: "This is a test notification.\n\n" +
                  "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
                  "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
                  "Flame Status: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
-        addLog("Email 發送成功", `測試動作: ${action.name} → ${toEmail}`);
-        alert("測試 Email 已發送至 " + toEmail);
+        addLog("Email Sent Successfully", `Test Action: ${action.name} → ${toEmail}`);
+        alert("Test email sent to " + toEmail);
     }).catch((err) => {
-        addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
-        alert("發送失敗: " + (err.text || err));
+        addLog("Email Send Failed", `Error: ${err.text || err}`);
+        alert("Send failed: " + (err.text || err));
     });
 }
 
-// 其他地方加入 log
+// Other logged actions
 function updateData() {
-    addLog("手動刷新資料");
-    // 原有 fetch 程式碼...
+    addLog("Manual Data Refresh");
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
@@ -392,31 +391,31 @@ function updateData() {
         });
 
     document.getElementById('updateTime').textContent = 
-        `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+        `Last updated: ${new Date().toLocaleString('en-US')}`;
 }
 
 function controlLed(type, state) {
-    addLog("控制 LED", `type=${type}, state=${state}`);
+    addLog("LED Control", `type=${type}, state=${state}`);
     fetch(`${espIP}/led?type=${type}&state=${state}`)
         .then(response => {
             if (!response.ok) throw new Error('HTTP ' + response.status);
             return response.text();
         })
         .then(text => {
-            console.log("LED 控制成功:", text);
+            console.log("LED control success:", text);
         })
         .catch(err => {
-            console.error("LED 控制失敗:", err);
+            console.error("LED control failed:", err);
         });
 }
 
-// 自動更新
+// Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
 
 setInterval(() => {
-    addLog("自動刷新資料 (每 20 秒)");
+    addLog("Auto Data Refresh (every 20s)");
     updateData();
 }, 20000);
 
