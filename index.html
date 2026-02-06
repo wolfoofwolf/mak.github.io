@@ -133,17 +133,22 @@
 
         function controlLed(type, state) {
             fetch(`${espIP}/led?type=${type}&state=${state}`)
-                .then(r => r.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP 錯誤: ' + response.status);
+                    }
+                    return response.text();
+                })
                 .then(text => {
-                    // 成功時不彈窗，只記錄在控制台（F12 可看到）
+                    // 成功時：不彈窗，只記錄在控制台（F12 可看到）
                     console.log("控制成功: " + text);
-                    // 如果你想加個小提示（非彈窗），可以加這行：
+                    // 可選：顯示成功小提示（不彈窗）
                     // document.getElementById('updateTime').textContent += " (控制成功)";
                 })
                 .catch(err => {
                     // 失敗時才彈窗
                     alert("控制失敗，請確認 ESP32 是否在線 (IP: 192.168.1.140)");
-                    console.error(err);
+                    console.error("控制錯誤:", err);
                 });
         }
 
