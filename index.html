@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temperature & Humidity Monitor</title>
+    <title>溫濕度與火焰監控</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: system-ui, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background: #111;
             color: #eee;
             min-height: 100vh;
@@ -69,7 +69,6 @@
             transition: all 0.2s;
         }
         button:hover { background: #555; }
-        button:active { transform: scale(0.98); }
         .auto-mode { background: #2196f3; }
         .all-off { background: #757575; }
         .version {
@@ -82,7 +81,6 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
-        /* 側邊欄 */
         .sidebar {
             height: 100%;
             width: 0;
@@ -109,7 +107,6 @@
             right: 25px;
             font-size: 36px;
         }
-        /* Actions Modal */
         .actions-modal {
             display: none;
             position: fixed;
@@ -152,9 +149,6 @@
         .delete-btn { background: #b71c1c; }
         .dup-btn { background: #30363d; }
         .test-btn { background: #238636; }
-        /* Log Modal */
-        .log-modal { display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
-        .log-content { background: #161b22; margin: 10% auto; width: 90%; max-width: 700px; border-radius: 12px; padding: 25px; max-height: 70vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -168,13 +162,21 @@
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showActions()">Actions</a>
-    <a href="#" onclick="showLog()">Log</a>  <!-- 只加這一行 -->
 </div>
 
 <div class="container">
-    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
-    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
-    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
+    <div class="data-box">
+        <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
+    </div>
+
+    <div class="data-box">
+        <span class="humid" id="humidDisplay">Humidity: -- % 💧</span>
+    </div>
+
+    <div class="data-box" id="flameBox">
+        <span id="flameDisplay">Flame Status: -- 🔥</span>
+    </div>
+
     <div class="time" id="updateTime">Last updated: loading...</div>
 
     <div class="buttons">
@@ -212,52 +214,15 @@
     </div>
 </div>
 
-<!-- Log Modal -->
-<div id="logModal" class="log-modal">
-    <div class="log-content">
-        <h3>系統 Log</h3>
-        <div id="logContent" style="line-height:1.6; min-height:300px;"></div>
-        <button onclick="clearLog()" style="margin-top:15px; width:100%; background:#f44336; padding:12px;">清空 Log</button>
-        <button onclick="closeLogModal()" style="margin-top:10px; width:100%; background:#f44336; padding:12px;">關閉</button>
-    </div>
-</div>
-
 <script>
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
-
-// Log 記錄陣列
-let logHistory = JSON.parse(localStorage.getItem("logHistory")) || [];
-
-function addToLog(message) {
-    const time = new Date().toLocaleTimeString('zh-TW');
-    logHistory.unshift(`[${time}] ${message}`);
-    if (logHistory.length > 50) logHistory.pop();
-    localStorage.setItem("logHistory", JSON.stringify(logHistory));
-}
-
-function showLog() {
-    document.getElementById("logModal").style.display = "block";
-    document.getElementById("logContent").innerHTML = logHistory.join("<br>") || "目前沒有記錄";
-}
-
-function closeLogModal() {
-    document.getElementById("logModal").style.display = "none";
-}
-
-function clearLog() {
-    if (confirm("確定要清空 Log 嗎？")) {
-        logHistory = [];
-        localStorage.removeItem("logHistory");
-        showLog();
-    }
-}
 
 // 側邊欄
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Actions 管理（你原本的程式碼，一字不改）
+// Actions 管理
 function showActions() {
     closeMenu();
     document.getElementById("actionsModal").style.display = "block";
@@ -284,14 +249,14 @@ function renderActionList() {
                 <td>${a.type}</td>
                 <td>${a.name}</td>
                 <td style="text-align:right;">
-                    <button class="btn-small edit-btn" onclick="openEditEmailModal(${a.id})">✏️</button>
+                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
                     <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
                     <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
                     <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
                 </td>
             </tr>`;
     });
-    document.getElementById("actionList").innerHTML = html;
+    document.getElementById("actionList").innerHTML = html || "<tr><td colspan='3'>No Actions</td></tr>";
 }
 
 function addSNMPTrap() {
@@ -300,7 +265,6 @@ function addSNMPTrap() {
         actions.push({ id: Date.now(), type:"SNMP Trap", name: name, fromEmail: "", toEmail: "" });
         saveActions();
         renderActionList();
-        addToLog(`新增 Action: ${name}`);
     }
 }
 
@@ -309,19 +273,24 @@ function deleteAction(id) {
         actions = actions.filter(a => a.id !== id);
         saveActions();
         renderActionList();
-        addToLog(`刪除 Action`);
     }
 }
 
 function editAction(id) {
     const action = actions.find(a => a.id === id);
-    const newName = prompt("Edit Action Name:", action.name);
-    if (newName) {
-        action.name = newName;
-        saveActions();
-        renderActionList();
-        addToLog(`修改 Action`);
-    }
+    
+    // 跳出三個 prompt 設定名稱 + 寄件人 + 收件人
+    const newName = prompt("修改 Action 名稱：", action.name);
+    const fromEmail = prompt("設定寄件人 Email (From)：", action.fromEmail || "");
+    const toEmail = prompt("設定收件人 Email (To)：", action.toEmail || "makmingkit144@gmail.com");
+
+    if (newName) action.name = newName;
+    action.fromEmail = fromEmail;
+    action.toEmail = toEmail;
+
+    saveActions();
+    renderActionList();
+    alert("Action 已更新！\n名稱：" + newName + "\n寄件人：" + fromEmail + "\n收件人：" + toEmail);
 }
 
 function duplicateAction(id) {
@@ -329,12 +298,11 @@ function duplicateAction(id) {
     actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
     saveActions();
     renderActionList();
-    addToLog(`複製 Action`);
 }
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
+    const toEmail = action.toEmail || prompt("請輸入收件人 Email：", "makmingkit144@gmail.com");
     if (!toEmail) return;
 
     emailjs.send("FYP", "FYP", {
@@ -343,16 +311,14 @@ function testAction(id) {
         action_name: action.name,
         action_type: action.type,
         time: new Date().toLocaleString('zh-TW'),
-        message: "This is a TEST ACTION notification. Please check system status.\n\n" +
-                 "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
-                 "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
-                 "Flame Status: " + document.getElementById('flameDisplay').textContent
+        message: "這是 TEST ACTION 測試通知，請確認系統狀態。\n\n" +
+                 "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+                 "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+                 "火焰狀態: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
-        alert("Test Action sent to " + toEmail + "!");
-        addToLog(`測試 Action: ${action.name}`);
+        alert("Test Action 成功發送 Email 到 " + toEmail + "！");
     }).catch((err) => {
-        alert("Send failed: " + err.text);
-        addToLog(`測試 Action 失敗`);
+        alert("發送失敗：" + err.text);
     });
 }
 
@@ -364,7 +330,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// 原有數據更新與控制（一字不改）
+// 原有數據更新與控制
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
