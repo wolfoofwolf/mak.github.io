@@ -61,8 +61,7 @@
         }
         button:hover { background: #555; }
         button:active { transform: scale(0.98); }
-        .green-on  { background: #4caf50; }
-        .green-off { background: #f44336; }
+        .auto-mode { background: #2196f3; }
         .all-off   { background: #757575; }
     </style>
 </head>
@@ -86,8 +85,7 @@
 
         <div class="buttons">
             <button onclick="updateData()">Refresh Data</button>
-            <button class="green-on" onclick="controlLed('green', 1)">All Green ON (Auto Mode)</button>
-            <button class="green-off" onclick="controlLed('green', 0)">All Green OFF</button>
+            <button class="auto-mode" onclick="controlLed('auto', 1)">恢復自動模式</button>
             <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
         </div>
     </div>
@@ -133,8 +131,9 @@
                 `Last updated: ${new Date().toLocaleString('zh-TW')}`;
         }
 
-        function controlLed(color, state) {
-            fetch(`${espIP}/led?color=${color}&state=${state}`)
+        function controlLed(type, state) {
+            let url = `${espIP}/led?type=${type}&state=${state}`;
+            fetch(url)
                 .then(r => r.text())
                 .then(text => {
                     alert("控制成功: " + text);
