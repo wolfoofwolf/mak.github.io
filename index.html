@@ -37,7 +37,6 @@
         .actions-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
         .search-box { width:60%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
         .add-btn { background:#238636; padding:10px 18px; font-size:0.95rem; }
-        .email-settings-btn { background:#2196f3; padding:10px 18px; font-size:0.95rem; margin-left:10px; }
         table { width:100%; border-collapse:collapse; margin-top:15px; }
         th, td { padding:12px; text-align:left; border-bottom:1px solid #30363d; }
         th { background:#21262d; color:#8b949e; }
@@ -46,13 +45,6 @@
         .delete-btn { background:#b71c1c; }
         .dup-btn { background:#30363d; }
         .test-btn { background:#238636; }
-
-        /* Email 設定 Modal */
-        .email-settings-modal { display:none; position:fixed; z-index:30; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); }
-        .email-settings-content { background:#161b22; margin:10% auto; width:80%; max-width:500px; border-radius:12px; padding:25px; }
-        .input-group { margin-bottom:15px; }
-        label { display:block; margin-bottom:5px; font-weight:bold; }
-        input { width:100%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
     </style>
 </head>
 <body>
@@ -110,23 +102,6 @@
     </div>
 </div>
 
-<!-- 編輯 Email 設定 Modal -->
-<div id="editEmailModal" class="actions-modal">
-    <div class="actions-content">
-        <h2 style="margin-top:0;">編輯 Action Email 設定</h2>
-        <div class="input-group">
-            <label>寄件人 Email (From)</label>
-            <input type="email" id="fromEmail" placeholder="yourname@example.com">
-        </div>
-        <div class="input-group">
-            <label>收件人 Email (To)</label>
-            <input type="email" id="toEmail" placeholder="makmingkit144@gmail.com">
-        </div>
-        <button onclick="saveActionEmail()" style="background:#238636; width:100%; padding:12px; margin-top:10px;">儲存</button>
-        <button onclick="closeEditEmailModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">取消</button>
-    </div>
-</div>
-
 <script>
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
@@ -147,7 +122,7 @@ function closeActionsModal() {
 }
 
 let actions = JSON.parse(localStorage.getItem("actions")) || [
-    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
+    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1" }
 ];
 
 function saveActions() {
@@ -175,7 +150,7 @@ function renderActionList() {
 function addSNMPTrap() {
     const name = prompt("請輸入 SNMP Trap Action 名稱：", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
-        actions.push({ id: Date.now(), type:"SNMP Trap", name: name, fromEmail: "", toEmail: "" });
+        actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
         saveActions();
         renderActionList();
     }
@@ -191,42 +166,32 @@ function deleteAction(id) {
 
 function editAction(id) {
     const action = actions.find(a => a.id === id);
-    document.getElementById("editEmailModal").style.display = "block";
-    document.getElementById("fromEmail").value = action.fromEmail || "";
-    document.getElementById("toEmail").value = action.toEmail || "";
-    window.currentEditId = id;  // 記錄目前編輯的 Action ID
-}
-
-function closeEditEmailModal() {
-    document.getElementById("editEmailModal").style.display = "none";
-}
-
-function saveActionEmail() {
-    const id = window.currentEditId;
-    const action = actions.find(a => a.id === id);
-    action.fromEmail = document.getElementById("fromEmail").value;
-    action.toEmail = document.getElementById("toEmail").value;
-    saveActions();
-    alert("Email 設定已儲存到 Action: " + action.name);
-    closeEditEmailModal();
+    const newName = prompt("修改 Action 名稱：", action.name);
+    if (newName) {
+        action.name = newName;
+        saveActions();
+        renderActionList();
+    }
 }
 
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
-    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
+    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
     saveActions();
     renderActionList();
 }
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || "makmingkit144@gmail.com";
 
+    // 讓使用者輸入收件人 Email
+    const toEmail = prompt("請輸入要寄送的 Email 地址：", "makmingkit144@gmail.com");
     if (!toEmail) {
-        alert("請先編輯 Action 設定收件人 Email");
+        alert("已取消");
         return;
     }
 
+    // 真的發 Email
     emailjs.send("FYP", "FYP", {
         to_email: toEmail,
         subject: "SNMP Trap Alert: " + action.name,
