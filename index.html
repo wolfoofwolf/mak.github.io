@@ -171,6 +171,7 @@
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showActions()">Actions</a>
+    <a href="#" onclick="showLog()">Log</a>
 </div>
 
 <div class="container">
@@ -343,6 +344,13 @@ function testAction(id) {
     }).catch((err) => {
         alert("Send failed: " + err.text);
     });
+}
+
+// === 新增 Log 相關功能（目前只做基本彈窗，之後可擴充記錄） ===
+function showLog() {
+    closeMenu();
+    alert("Log 功能尚未實作完整。\n\n目前僅記錄主要操作（後續可擴充記錄所有行為到 localStorage 或顯示列表）。");
+    // 未來可在此處顯示 log 列表 modal，或 console.log 出詳細記錄
 }
 
 // 點擊其他地方關閉 menu
