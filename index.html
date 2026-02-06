@@ -2,43 +2,124 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>我的溫濕度監控網站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>溫濕度監控</title>
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; text-align: center; margin-top: 50px; background: #e8f4f8; }
-        #data { font-size: 48px; color: #0066cc; margin: 50px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { color: #0066cc; }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #111;
+            color: #eee;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #ddd;
+        }
+        .data-box {
+            background: #222;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4rem;
+        }
+        .temp { color: #ff9800; }
+        .humid { color: #4fc3f7; }
+        .time {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #333;
+            color: white;
+        }
+        button:hover {
+            background: #555;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .refresh { background: #444; }
+        .control { background: #2c3e50; }
     </style>
 </head>
 <body>
-    <h1>即時溫濕度監控（來自 ThingSpeak）</h1>
-    <div id="data">載入中，請稍等...</div>
+    <div class="container">
+        <h1>即時溫濕度監控</h1>
+
+        <div class="data-box">
+            <span class="temp">溫度：22.60 °C</span>
+        </div>
+
+        <div class="data-box">
+            <span class="humid">濕度：54.00 %</span>
+        </div>
+
+        <div class="time" id="updateTime">更新時間：載入中...</div>
+
+        <div class="buttons">
+            <button class="refresh" onclick="updateData()">刷新資料</button>
+            <button class="control" onclick="alert('模擬開燈')">開燈</button>
+            <button class="control" onclick="alert('模擬關燈')">關燈</button>
+        </div>
+    </div>
 
     <script>
-        // ===== 這裡改成你自己的 ThingSpeak 資料 =====
-        const channelID = 3252434;              // 例如 1234567，從 ThingSpeak 頻道頁面抄
-        const readAPIKey = "PKQNQOPCZYREXB6C";          // 從 ThingSpeak API Keys 頁面抄
-        // ===========================================
+        // 改成你自己的 ThingSpeak 資訊
+        const channelID = 3252434;
+        const readAPIKey = "你的Read_API_Key";  // ← 這裡填你的 Read API Key（不是 Write）
 
         function updateData() {
             fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
                 .then(response => response.json())
                 .then(data => {
                     const temp = data.field1 || "無資料";
-                    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
-                        .then(response => response.json())
-                        .then(data2 => {
-                            const humid = data2.field2 || "無資料";
-                            document.getElementById('data').innerHTML = 
-                                `<strong>溫度: ${temp} °C</strong><br><strong>濕度: ${humid} %</strong><br><small>更新時間: ${new Date().toLocaleString('zh-TW')}</small>`;
-                        });
+                    document.querySelector('.temp').textContent = `溫度：${temp} °C`;
+
+                    return fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const humid = data.field2 || "無資料";
+                    document.querySelector('.humid').textContent = `濕度：${humid} %`;
+
+                    document.getElementById('updateTime').textContent = 
+                        `更新時間：${new Date().toLocaleString('zh-TW')}`;
                 })
                 .catch(err => {
-                    document.getElementById('data').innerHTML = "讀取失敗（檢查 API Key 或 ThingSpeak 是否有新資料）";
+                    document.getElementById('updateTime').textContent = "讀取失敗，請檢查網路或 API Key";
+                    console.error(err);
                 });
         }
 
-        setInterval(updateData, 20000);  // 每 20 秒自動更新
-        updateData();  // 頁面打開時立刻載入
+        // 每 20 秒自動更新
+        setInterval(updateData, 20000);
+        // 頁面載入時先更新一次
+        updateData();
     </script>
 </body>
 </html>
