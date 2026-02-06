@@ -7,15 +7,32 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
+            padding: 0;
             font-family: system-ui, sans-serif;
             background: #111;
             color: #eee;
-            text-align: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+        .menu-btn {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #eee;
+        }
+        .title {
+            font-size: 1.4rem;
+            margin: 0;
         }
         .container {
             max-width: 500px;
-            margin: 0 auto;
+            margin: 30px auto;
             background: #1a1a1a;
             border-radius: 12px;
             padding: 30px;
@@ -63,6 +80,39 @@
         button:active { transform: scale(0.98); }
         .auto-mode { background: #2196f3; }
         .all-off   { background: #757575; }
+
+        /* 側邊欄 menu */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
+        .sidebar a {
+            padding: 15px 30px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            color: #f1f1f1;
+        }
+        .sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
         .version {
             position: fixed;
             bottom: 10px;
@@ -76,9 +126,22 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>溫濕度與火焰監控</h1>
+    <!-- 頂部導航列 -->
+    <div class="top-bar">
+        <div class="menu-btn" onclick="openMenu()">☰</div>
+        <h1 class="title">溫濕度與火焰監控</h1>
+        <div></div> <!-- 佔位 -->
+    </div>
 
+    <!-- 側邊欄 menu -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+        <a href="#" onclick="showNotificationRules()">Notification Rules</a>
+        <a href="#" onclick="showActions()">Action</a>
+    </div>
+
+    <!-- 主要內容 -->
+    <div class="container">
         <div class="data-box">
             <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
         </div>
@@ -100,12 +163,35 @@
         </div>
     </div>
 
-    <div class="version">版本：v1.5 - 2026/02/06</div>
+    <div class="version">版本：v1.6 - 2026/02/06</div>
 
+    <!-- 側邊欄控制 -->
+    <script>
+        function openMenu() {
+            document.getElementById("sidebar").style.width = "250px";
+        }
+
+        function closeMenu() {
+            document.getElementById("sidebar").style.width = "0";
+        }
+
+        // 選項點擊事件（之後可擴充）
+        function showNotificationRules() {
+            alert("通知規則設定（之後可擴充：溫度 > 30°C 寄 email 等）");
+            closeMenu();
+        }
+
+        function showActions() {
+            alert("動作清單（之後可擴充：自動開燈、警報等）");
+            closeMenu();
+        }
+    </script>
+
+    <!-- 原有數據更新與控制 -->
     <script>
         const channelID = 3252434;
         const readAPIKey = "PKQNQOPCZYREXB6C";
-        const espIP = "http://192.168.1.140";  // 你的 ESP32 IP
+        const espIP = "http://192.168.1.140";
 
         function updateData() {
             fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
@@ -152,14 +238,10 @@
                     return response.text();
                 })
                 .then(text => {
-                    // 成功時：什麼都不彈，只記錄在控制台
                     console.log("控制成功: " + text);
                 })
                 .catch(err => {
-                    // 失敗時也不彈窗，只記錄錯誤（可依需求加提示）
                     console.error("控制錯誤:", err);
-                    // 如果想失敗時有提示，可取消下面註解
-                    // alert("控制失敗，請確認 ESP32 是否在線 (IP: 192.168.1.140)");
                 });
         }
 
