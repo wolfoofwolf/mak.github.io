@@ -1,57 +1,170 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>溫濕度與火焰監控</title>
+    <title>Temperature & Humidity Monitor</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; }
-        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
-        .menu-btn { font-size:1.8rem; cursor:pointer; color:#eee; }
-        .title { font-size:1.4rem; margin:0; }
-        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
-        .data-box { background:#222; border-radius:10px; padding:20px; margin:15px 0; font-size:1.4rem; }
-        .temp { color:#ff9800; }
-        .humid { color:#4fc3f7; }
-        .flame-normal { background:#222; color:#4caf50; }
-        .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
-        .time { font-size:0.9rem; color:#888; margin-top:20px; }
-        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
-        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; transition:all 0.2s; }
-        button:hover { background:#555; }
-        button:active { transform:scale(0.98); }
-        .auto-mode { background:#2196f3; }
-        .all-off { background:#757575; }
-        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
-
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+            background: #111;
+            color: #eee;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+        .menu-btn {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #eee;
+        }
+        .title {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .data-box {
+            background: #222;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4rem;
+        }
+        .temp { color: #ff9800; }
+        .humid { color: #4fc3f7; }
+        .flame-normal { background: #222; color: #4caf50; }
+        .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
+        .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            transition: all 0.2s;
+        }
+        button:hover { background: #555; }
+        button:active { transform: scale(0.98); }
+        .auto-mode { background: #2196f3; }
+        .all-off { background: #757575; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
         /* 側邊欄 */
-        .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8); }
-        .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
-        .sidebar a:hover { color:#f1f1f1; }
-        .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
-
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            background: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
+        .sidebar a {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: #ccc;
+            display: block;
+        }
+        .sidebar a:hover { color: #f1f1f1; }
+        .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 36px;
+        }
         /* Actions Modal */
-        .actions-modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
-        .actions-content { background:#161b22; margin:5% auto; width:90%; max-width:900px; border-radius:12px; padding:25px; }
-        .actions-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .search-box { width:60%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
-        .add-btn { background:#238636; padding:10px 18px; font-size:0.95rem; }
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th, td { padding:12px; text-align:left; border-bottom:1px solid #30363d; }
-        th { background:#21262d; color:#8b949e; }
-        .action-btn { padding:6px 12px; margin-right:8px; border-radius:4px; cursor:pointer; }
-        .edit-btn { background:#444c56; }
-        .delete-btn { background:#b71c1c; }
-        .dup-btn { background:#30363d; }
-        .test-btn { background:#238636; }
+        .actions-modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            overflow-y: auto;
+        }
+        .actions-content {
+            background: #161b22;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        .actions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            width: 60%;
+            padding: 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+        }
+        .add-btn { background: #238636; padding: 10px 18px; font-size: 0.95rem; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #8b949e; }
+        .action-btn { padding: 6px 12px; margin-right: 8px; border-radius: 4px; cursor: pointer; }
+        .edit-btn { background: #444c56; }
+        .delete-btn { background: #b71c1c; }
+        .dup-btn { background: #30363d; }
+        .test-btn { background: #238636; }
+        /* Email 設定 Modal */
+        .email-settings-modal { display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        .email-settings-content { background: #161b22; margin: 10% auto; width: 80%; max-width: 500px; border-radius: 12px; padding: 25px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div class="menu-btn" onclick="openMenu()">☰</div>
-    <h1 class="title">溫濕度與火焰監控</h1>
+    <h1 class="title">Temperature & Humidity Monitor</h1>
     <div></div>
 </div>
 
@@ -69,12 +182,12 @@
 
     <div class="buttons">
         <button onclick="updateData()">Refresh Data</button>
-        <button class="auto-mode" onclick="controlLed('auto', 1)">恢復自動模式</button>
+        <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
         <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
     </div>
 </div>
 
-<div class="version">版本：v1.9 - 2026/02/06</div>
+<div class="version">Version: v1.9 - 2026/02/06</div>
 
 <!-- Actions Modal -->
 <div id="actionsModal" class="actions-modal">
@@ -102,13 +215,53 @@
     </div>
 </div>
 
+<!-- 編輯 Email 設定 Modal -->
+<div id="editEmailModal" class="actions-modal">
+    <div class="actions-content">
+        <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
+        <div class="input-group">
+            <label>From Email (Sender)</label>
+            <input type="email" id="fromEmail" placeholder="yourname@example.com">
+        </div>
+        <div class="input-group">
+            <label>To Email (Receiver)</label>
+            <input type="email" id="toEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <button onclick="saveActionEmail()" style="background:#238636; width:100%; padding:12px; margin-top:10px;">Save</button>
+        <button onclick="closeEditEmailModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">Cancel</button>
+    </div>
+</div>
+
 <script>
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
-// 側邊欄
+// 側邊欄控制
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
+
+// Email 設定 Modal
+function openEditEmailModal(id) {
+    document.getElementById("editEmailModal").style.display = "block";
+    window.currentEditId = id;
+    const action = actions.find(a => a.id === id);
+    document.getElementById("fromEmail").value = action.fromEmail || "";
+    document.getElementById("toEmail").value = action.toEmail || "";
+}
+
+function closeEditEmailModal() {
+    document.getElementById("editEmailModal").style.display = "none";
+}
+
+function saveActionEmail() {
+    const id = window.currentEditId;
+    const action = actions.find(a => a.id === id);
+    action.fromEmail = document.getElementById("fromEmail").value;
+    action.toEmail = document.getElementById("toEmail").value;
+    saveActions();
+    alert("Email settings saved for " + action.name);
+    closeEditEmailModal();
+}
 
 // Actions 管理
 function showActions() {
@@ -122,7 +275,7 @@ function closeActionsModal() {
 }
 
 let actions = JSON.parse(localStorage.getItem("actions")) || [
-    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1" }
+    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
 ];
 
 function saveActions() {
@@ -137,7 +290,7 @@ function renderActionList() {
                 <td>${a.type}</td>
                 <td>${a.name}</td>
                 <td style="text-align:right;">
-                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
+                    <button class="btn-small edit-btn" onclick="openEditEmailModal(${a.id})">✏️</button>
                     <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
                     <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
                     <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
@@ -148,27 +301,17 @@ function renderActionList() {
 }
 
 function addSNMPTrap() {
-    const name = prompt("請輸入 SNMP Trap Action 名稱：", "SNMP Trap Action " + (actions.length + 1));
+    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
-        actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
+        actions.push({ id: Date.now(), type:"SNMP Trap", name: name, fromEmail: "", toEmail: "" });
         saveActions();
         renderActionList();
     }
 }
 
 function deleteAction(id) {
-    if (confirm("確定要刪除嗎？")) {
+    if (confirm("Confirm delete?")) {
         actions = actions.filter(a => a.id !== id);
-        saveActions();
-        renderActionList();
-    }
-}
-
-function editAction(id) {
-    const action = actions.find(a => a.id === id);
-    const newName = prompt("修改 Action 名稱：", action.name);
-    if (newName) {
-        action.name = newName;
         saveActions();
         renderActionList();
     }
@@ -176,36 +319,30 @@ function editAction(id) {
 
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
-    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
+    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
     saveActions();
     renderActionList();
 }
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
+    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
+    if (!toEmail) return;
 
-    // 讓使用者輸入收件人 Email
-    const toEmail = prompt("請輸入要寄送的 Email 地址：", "makmingkit144@gmail.com");
-    if (!toEmail) {
-        alert("已取消");
-        return;
-    }
-
-    // 真的發 Email
     emailjs.send("FYP", "FYP", {
         to_email: toEmail,
         subject: "SNMP Trap Alert: " + action.name,
         action_name: action.name,
         action_type: action.type,
         time: new Date().toLocaleString('zh-TW'),
-        message: "這是 TEST ACTION 測試通知，請確認系統狀態。\n\n" +
-                 "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
-                 "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
-                 "火焰狀態: " + document.getElementById('flameDisplay').textContent
+        message: "This is a TEST ACTION notification. Please check system status.\n\n" +
+                 "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
+                 "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
+                 "Flame Status: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
-        alert("Test Action 成功發送 Email 到 " + toEmail + "！");
+        alert("Test Action sent to " + toEmail + "!");
     }).catch((err) => {
-        alert("發送失敗：" + err.text);
+        alert("Send failed: " + err.text);
     });
 }
 
