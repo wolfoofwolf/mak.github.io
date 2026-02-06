@@ -135,10 +135,10 @@
             fetch(`${espIP}/led?type=${type}&state=${state}`)
                 .then(r => r.text())
                 .then(text => {
-                    // 成功時不彈窗，只在 console 記錄（或可加小提示）
+                    // 成功時不彈窗，只記錄在控制台（F12 可看到）
                     console.log("控制成功: " + text);
-                    // 可選：加一個非阻塞提示
-                    // alert("控制成功: " + text);  // 如果想保留彈窗可取消註解
+                    // 如果你想加個小提示（非彈窗），可以加這行：
+                    // document.getElementById('updateTime').textContent += " (控制成功)";
                 })
                 .catch(err => {
                     // 失敗時才彈窗
