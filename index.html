@@ -29,7 +29,7 @@
         .sidebar a:hover { color:#f1f1f1; }
         .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
 
-        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
+        .modal { display:none; position:fixed; z-index:30; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); }
         .modal-content { background:#161b22; margin:10% auto; width:90%; max-width:500px; border-radius:12px; padding:25px; }
     </style>
 </head>
@@ -48,18 +48,9 @@
 </div>
 
 <div class="container">
-    <div class="data-box">
-        <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
-    </div>
-
-    <div class="data-box">
-        <span class="humid" id="humidDisplay">Humidity: -- % 💧</span>
-    </div>
-
-    <div class="data-box" id="flameBox">
-        <span id="flameDisplay">Flame Status: -- 🔥</span>
-    </div>
-
+    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
+    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
+    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
     <div class="time" id="updateTime">Last updated: loading...</div>
 
     <div class="buttons">
@@ -76,7 +67,7 @@
     <div class="modal-content">
         <h2>Notification Rules</h2>
         <p>當溫度進入以下範圍時自動發送 Email</p>
-
+        
         <label><input type="checkbox" id="nr_range1"> 0 - 20 °C</label><br>
         <label><input type="checkbox" id="nr_range2"> 20 - 30 °C</label><br>
         <label><input type="checkbox" id="nr_range3"> 30 - 35 °C</label><br><br>
@@ -90,7 +81,7 @@
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
-// 側邊欄控制
+// 側邊欄
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
@@ -99,7 +90,7 @@ function showNotificationRules() {
     closeMenu();
     document.getElementById("rulesModal").style.display = "block";
 
-    // 載入已儲存的勾選狀態
+    // 載入已儲存狀態
     document.getElementById("nr_range1").checked = localStorage.getItem("nr_range1") === "true";
     document.getElementById("nr_range2").checked = localStorage.getItem("nr_range2") === "true";
     document.getElementById("nr_range3").checked = localStorage.getItem("nr_range3") === "true";
@@ -110,19 +101,14 @@ function closeRulesModal() {
 }
 
 function saveNotificationRule() {
-    const r1 = document.getElementById("nr_range1").checked;
-    const r2 = document.getElementById("nr_range2").checked;
-    const r3 = document.getElementById("nr_range3").checked;
-
-    localStorage.setItem("nr_range1", r1);
-    localStorage.setItem("nr_range2", r2);
-    localStorage.setItem("nr_range3", r3);
-
+    localStorage.setItem("nr_range1", document.getElementById("nr_range1").checked);
+    localStorage.setItem("nr_range2", document.getElementById("nr_range2").checked);
+    localStorage.setItem("nr_range3", document.getElementById("nr_range3").checked);
     alert("規則已儲存！當溫度進入勾選範圍時會自動發送 Email");
     closeRulesModal();
 }
 
-// 自動檢查溫度並發 Email（只加這段，不動其他）
+// 自動檢查溫度並發 Email
 function checkNotificationRule(temp) {
     const r1 = localStorage.getItem("nr_range1") === "true";
     const r2 = localStorage.getItem("nr_range2") === "true";
@@ -130,7 +116,6 @@ function checkNotificationRule(temp) {
 
     let trigger = false;
     let range = "";
-
     if (r1 && temp < 20) { trigger = true; range = "0-20°C"; }
     else if (r2 && temp >= 20 && temp < 30) { trigger = true; range = "20-30°C"; }
     else if (r3 && temp >= 30 && temp <= 35) { trigger = true; range = "30-35°C"; }
@@ -140,13 +125,11 @@ function checkNotificationRule(temp) {
             to_email: "makmingkit144@gmail.com",
             subject: "溫度警報觸發！",
             message: `目前溫度：${temp}°C 已進入您設定的範圍 (${range})\n請立即檢查系統！`
-        }).then(() => {
-            console.log("自動警報 Email 已發送！");
-        }).catch(err => console.error("自動發信失敗", err));
+        });
     }
 }
 
-// 原有數據更新（只在溫度更新時加 checkNotificationRule）
+// 原有 updateData（只加一行檢查）
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
@@ -157,7 +140,7 @@ function updateData() {
         .then(d => {
             const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
             document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
-            if (temp !== '--') checkNotificationRule(parseFloat(temp));  // 只加這行
+            if (temp !== '--') checkNotificationRule(parseFloat(temp));   // ← 只加這一行
         });
 
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
