@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <div class="version">版本：v1.4 - 2026/02/06</div>
+    <div class="version">版本：v1.5 - 2026/02/06</div>
 
     <script>
         const channelID = 3252434;
@@ -146,22 +146,20 @@
         function controlLed(type, state) {
             fetch(`${espIP}/led?type=${type}&state=${state}`)
                 .then(response => {
-                    // 檢查 HTTP 狀態碼是否成功
                     if (!response.ok) {
                         throw new Error('HTTP 錯誤: ' + response.status);
                     }
                     return response.text();
                 })
                 .then(text => {
-                    // 成功時：不彈窗，只記錄在控制台
+                    // 成功時：什麼都不彈，只記錄在控制台
                     console.log("控制成功: " + text);
-                    // 可選：加一個非彈窗的成功提示（例如更新時間旁邊顯示）
-                    // document.getElementById('updateTime').textContent += " (控制成功)";
                 })
                 .catch(err => {
-                    // 失敗時才彈窗
-                    alert("控制失敗，請確認 ESP32 是否在線 (IP: 192.168.1.140)");
+                    // 失敗時也不彈窗，只記錄錯誤（可依需求加提示）
                     console.error("控制錯誤:", err);
+                    // 如果想失敗時有提示，可取消下面註解
+                    // alert("控制失敗，請確認 ESP32 是否在線 (IP: 192.168.1.140)");
                 });
         }
 
