@@ -346,11 +346,10 @@ function testAction(id) {
     });
 }
 
-// === 新增 Log 相關功能（目前只做基本彈窗，之後可擴充記錄） ===
+// Log 功能（目前簡單提示，可自行擴充）
 function showLog() {
     closeMenu();
-    alert("Log 功能尚未實作完整。\n\n目前僅記錄主要操作（後續可擴充記錄所有行為到 localStorage 或顯示列表）。");
-    // 未來可在此處顯示 log 列表 modal，或 console.log 出詳細記錄
+    alert("Log 功能目前尚未完整實作。\n\n點擊此處可顯示所有系統操作記錄（例如動作觸發、資料更新、警報發送等）。\n未來可改為顯示詳細的日誌列表。");
 }
 
 // 點擊其他地方關閉 menu
