@@ -72,11 +72,24 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
         th { background: #21262d; color: #8b949e; }
-        .action-btn { padding: 6px 12px; margin-right: 8px; border-radius: 4px; cursor: pointer; }
-        .edit-btn { background: #444c56; }
-        .delete-btn { background: #b71c1c; }
-        .dup-btn { background: #30363d; }
-        .test-btn { background: #238636; }
+        .action-btn {
+            padding: 6px 14px;
+            margin: 0 4px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+        .action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .edit-btn { background: #3b82f6; }
+        .delete-btn { background: #ef4444; }
+        .duplicate-btn { background: #6b7280; }
+        .test-btn { background: #10b981; }
         .clear-log-btn { background: #b71c1c; margin-top: 15px; padding: 10px 20px; }
         /* Log Modal styles */
         .log-entry {
@@ -182,7 +195,7 @@ function addLog(action, details = "") {
         action: action,
         details: details
     };
-    logEntries.unshift(entry); // newest first
+    logEntries.unshift(entry);
     localStorage.setItem("systemLog", JSON.stringify(logEntries));
 }
 
@@ -279,14 +292,14 @@ function renderActionList() {
     let html = "";
     actions.forEach(a => {
         html += `
-            <tr>
+            <tr class="action-row">
                 <td>${a.type}</td>
                 <td>${a.name}</td>
                 <td style="text-align:right;">
-                    <button class="btn-small edit-btn" onclick="openEditEmailModal(${a.id})">✏️</button>
-                    <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
-                    <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
-                    <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
+                    <button class="action-btn edit-btn" onclick="openEditEmailModal(${a.id})">Edit</button>
+                    <button class="action-btn delete-btn" onclick="deleteAction(${a.id})">Delete</button>
+                    <button class="action-btn duplicate-btn" onclick="duplicateAction(${a.id})">Duplicate</button>
+                    <button class="action-btn test-btn" onclick="testAction(${a.id})">Test</button>
                 </td>
             </tr>`;
     });
