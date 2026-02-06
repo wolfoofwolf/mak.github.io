@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>溫濕度與火焰監控</title>
+    <title>Temperature & Humidity Monitor</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: system-ui, sans-serif;
             background: #111;
             color: #eee;
             min-height: 100vh;
@@ -81,7 +82,7 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
-        /* 側邊欄 */
+        /* Sidebar */
         .sidebar {
             height: 100%;
             width: 0;
@@ -97,7 +98,6 @@
         }
         .sidebar a {
             padding: 15px 30px;
-            text-decoration: none;
             font-size: 1.2rem;
             color: #ccc;
             display: block;
@@ -118,27 +118,69 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.85);
+            overflow-y: auto;
         }
         .actions-content {
-            background: #1a1a1a;
+            background: #161b22;
             margin: 5% auto;
             width: 90%;
-            max-width: 700px;
+            max-width: 900px;
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
         }
-        .action-row {
+        .actions-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
         }
-        .action-row:hover { background: #222; }
-        .btn-small {
+        .search-box {
+            width: 60%;
+            padding: 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+        }
+        .add-btn {
+            background: #238636;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #30363d;
+        }
+        th {
+            background: #21262d;
+            color: #8b949e;
+        }
+        .action-btn {
             padding: 6px 12px;
-            font-size: 0.9rem;
-            margin-left: 10px;
+            margin-right: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .edit-btn { background: #444c56; }
+        .delete-btn { background: #b71c1c; }
+        .dup-btn { background: #30363d; }
+        .test-btn { background: #238636; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -146,14 +188,14 @@
 
 <div class="top-bar">
     <div class="menu-btn" onclick="openMenu()">☰</div>
-    <h1 class="title">溫濕度與火焰監控</h1>
+    <h1 class="title">Temperature & Humidity Monitor</h1>
     <div></div>
 </div>
 
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showNotificationRules()">Notification Rules</a>
-    <a href="#" onclick="showActions()">Action</a>
+    <a href="#" onclick="showActions()">Actions</a>
 </div>
 
 <div class="container">
@@ -173,43 +215,48 @@
 
     <div class="buttons">
         <button onclick="updateData()">Refresh Data</button>
-        <button class="auto-mode" onclick="controlLed('auto', 1)">恢復自動模式</button>
+        <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
         <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
     </div>
 </div>
 
-<div class="version">版本：v1.7 - 2026/02/06</div>
+<div class="version">Version: v1.8 - 2026/02/06</div>
 
-<!-- Actions 模擬頁面 -->
+<!-- Actions Modal -->
 <div id="actionsModal" class="actions-modal">
     <div class="actions-content">
-        <h2 style="margin-top:0;">Actions</h2>
-        <div style="margin-bottom:15px;">
-            <input type="text" id="searchAction" placeholder="Search..." style="width:60%; padding:8px; background:#222; color:#eee; border:1px solid #444;">
-            <button onclick="addSNMPTrap()" style="background:#4caf50; float:right; padding:8px 16px;">+ ADD</button>
+        <div class="actions-header">
+            <h2 style="margin:0;">Actions</h2>
+            <button onclick="closeActionsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
 
-        <table style="width:100%; border-collapse:collapse;">
+        <div style="margin-bottom:15px;">
+            <input type="text" id="searchAction" placeholder="Search..." class="search-box">
+            <button onclick="addSNMPTrap()" class="add-btn">+ ADD</button>
+        </div>
+
+        <table>
             <thead>
-                <tr style="background:#222; text-align:left;">
-                    <th style="padding:10px;">Action Type</th>
-                    <th style="padding:10px;">Action Name</th>
-                    <th style="padding:10px; width:220px;"></th>
+                <tr>
+                    <th>Action Type</th>
+                    <th>Action Name</th>
+                    <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody id="actionList"></tbody>
         </table>
-
-        <button onclick="closeActionsModal()" style="margin-top:20px; width:100%; padding:12px; background:#333;">Close</button>
     </div>
 </div>
 
 <script>
+// EmailJS 初始化（填你的真實資訊）
+emailjs.init("DesLsbj7IJqknmZFq");  // Public Key
+
 // ==================== 側邊欄 ====================
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// ==================== Actions Modal ====================
+// ==================== Actions ====================
 function showActions() {
     closeMenu();
     document.getElementById("actionsModal").style.display = "block";
@@ -229,13 +276,13 @@ function renderActionList() {
     actions.forEach(a => {
         html += `
             <tr class="action-row">
-                <td style="padding:12px;">${a.type}</td>
-                <td style="padding:12px;">${a.name}</td>
-                <td style="text-align:right; padding:12px;">
-                    <button class="btn-small" onclick="editAction(${a.id})">✏️</button>
-                    <button class="btn-small" style="background:#f44336;" onclick="deleteAction(${a.id})">🗑️</button>
+                <td>${a.type}</td>
+                <td>${a.name}</td>
+                <td style="text-align:right;">
+                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
+                    <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
                     <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
-                    <button class="btn-small" style="background:#333;" onclick="testAction(${a.id})">TEST ACTION</button>
+                    <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
                 </td>
             </tr>`;
     });
@@ -243,7 +290,7 @@ function renderActionList() {
 }
 
 function addSNMPTrap() {
-    const name = prompt("請輸入 SNMP Trap Action 名稱：", "SNMP Trap Action " + (actions.length + 1));
+    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
         actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
         renderActionList();
@@ -251,7 +298,7 @@ function addSNMPTrap() {
 }
 
 function deleteAction(id) {
-    if (confirm("確定要刪除嗎？")) {
+    if (confirm("Confirm delete?")) {
         actions = actions.filter(a => a.id !== id);
         renderActionList();
     }
@@ -259,7 +306,7 @@ function deleteAction(id) {
 
 function editAction(id) {
     const action = actions.find(a => a.id === id);
-    const newName = prompt("修改 Action 名稱：", action.name);
+    const newName = prompt("Edit Action Name:", action.name);
     if (newName) {
         action.name = newName;
         renderActionList();
@@ -274,7 +321,23 @@ function duplicateAction(id) {
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    alert(`正在測試：${action.name}\n\nSNMP Trap 已發送！（模擬成功）`);
+    
+    // 真的發送 Email
+    emailjs.send("FYP", "FYP", {
+        to_email: "makmingkit144@gmail.com",
+        subject: "SNMP Trap Alert: " + action.name,
+        action_name: action.name,
+        action_type: action.type,
+        time: new Date().toLocaleString('zh-TW'),
+        message: "This is a TEST ACTION notification. Please check system status.\n\n" +
+                 "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
+                 "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
+                 "Flame Status: " + document.getElementById('flameDisplay').textContent
+    }).then(() => {
+        alert("Test Action 成功發送 Email！");
+    }).catch((err) => {
+        alert("發送失敗：" + err.text);
+    });
 }
 
 // 點擊其他地方關閉 menu
