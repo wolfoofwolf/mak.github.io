@@ -57,8 +57,6 @@
         }
         button:hover { background: #555; }
         button:active { transform: scale(0.98); }
-        .green-on  { background: #4caf50; }
-        .green-off { background: #f44336; }
     </style>
 </head>
 <body>
@@ -81,8 +79,8 @@
 
         <div class="buttons">
             <button onclick="updateData()">Refresh Data</button>
-            <button class="green-on" onclick="alert('All Green LEDs turned ON (simulation)')">All Green ON</button>
-            <button class="green-off" onclick="alert('All Green LEDs turned OFF (simulation)')">All Green OFF</button>
+            <button onclick="alert('模擬開燈')">Open Light</button>
+            <button onclick="alert('模擬關燈')">Close Light</button>
         </div>
     </div>
 
@@ -107,7 +105,7 @@
                     document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
                 });
 
-            // 火焰 (Field 3) - 0=有火焰, 1=無火焰
+            // 火焰狀態 (Field 3) - 0=有火焰, 1=無火焰
             fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
                 .then(r => r.json())
                 .then(d => {
@@ -132,7 +130,9 @@
                 `Last updated: ${new Date().toLocaleString('zh-TW')}`;
         }
 
+        // 每 20 秒自動更新
         setInterval(updateData, 20000);
+        // 頁面載入時立即更新一次
         updateData();
     </script>
 </body>
