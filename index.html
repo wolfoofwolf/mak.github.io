@@ -63,6 +63,16 @@
         button:active { transform: scale(0.98); }
         .auto-mode { background: #2196f3; }
         .all-off   { background: #757575; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +99,8 @@
             <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
         </div>
     </div>
+
+    <div class="version">版本：v1.4 - 2026/02/06</div>
 
     <script>
         const channelID = 3252434;
@@ -134,15 +146,16 @@
         function controlLed(type, state) {
             fetch(`${espIP}/led?type=${type}&state=${state}`)
                 .then(response => {
+                    // 檢查 HTTP 狀態碼是否成功
                     if (!response.ok) {
                         throw new Error('HTTP 錯誤: ' + response.status);
                     }
                     return response.text();
                 })
                 .then(text => {
-                    // 成功時：不彈窗，只記錄在控制台（F12 可看到）
+                    // 成功時：不彈窗，只記錄在控制台
                     console.log("控制成功: " + text);
-                    // 可選：顯示成功小提示（不彈窗）
+                    // 可選：加一個非彈窗的成功提示（例如更新時間旁邊顯示）
                     // document.getElementById('updateTime').textContent += " (控制成功)";
                 })
                 .catch(err => {
