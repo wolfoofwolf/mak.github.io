@@ -7,43 +7,25 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: system-ui, sans-serif;
-            background: #111;
-            color: #eee;
+            background: #111; color: #eee;
             min-height: 100vh;
         }
         .top-bar {
-            background: #1a1a1a;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: #1a1a1a; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
             box-shadow: 0 2px 10px rgba(0,0,0,0.6);
         }
-        .menu-btn {
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #eee;
-        }
-        .title {
-            font-size: 1.4rem;
-            margin: 0;
-        }
+        .menu-btn { font-size: 1.8rem; cursor: pointer; color: #eee; }
+        .title { font-size: 1.4rem; margin: 0; }
         .container {
-            max-width: 500px;
-            margin: 30px auto;
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 30px;
+            max-width: 500px; margin: 30px auto;
+            background: #1a1a1a; border-radius: 12px; padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
         .data-box {
-            background: #222;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
+            background: #222; border-radius: 10px; padding: 20px; margin: 15px 0;
             font-size: 1.4rem;
         }
         .temp { color: #ff9800; }
@@ -51,98 +33,41 @@
         .flame-normal { background: #222; color: #4caf50; }
         .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
         .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
+        .buttons { display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
         button {
-            padding: 12px 24px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #333;
-            color: white;
-            transition: all 0.2s;
+            padding: 12px 24px; font-size: 1rem; border: none; border-radius: 8px;
+            cursor: pointer; background: #333; color: white; transition: all 0.2s;
         }
         button:hover { background: #555; }
         button:active { transform: scale(0.98); }
         .auto-mode { background: #2196f3; }
         .all-off { background: #757575; }
         .version {
-            position: fixed;
-            bottom: 10px;
-            right: 20px;
-            font-size: 0.8rem;
-            color: #555;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
+            position: fixed; bottom: 10px; right: 20px; font-size: 0.8rem;
+            color: #555; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px;
         }
-        /* 側邊欄 */
+        /* Sidebar */
         .sidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 10;
-            top: 0;
-            left: 0;
-            background: #111;
-            overflow-x: hidden;
-            transition: 0.5s;
-            padding-top: 60px;
+            height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0;
+            background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.8);
         }
         .sidebar a {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            color: #ccc;
-            display: block;
+            padding: 15px 30px; font-size: 1.2rem; color: #ccc; display: block;
         }
         .sidebar a:hover { color: #f1f1f1; }
-        .closebtn {
-            position: absolute;
-            top: 10px;
-            right: 25px;
-            font-size: 36px;
-        }
-        /* Actions Modal */
+        .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
+        /* Modal */
         .actions-modal {
-            display: none;
-            position: fixed;
-            z-index: 20;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            overflow-y: auto;
+            display: none; position: fixed; z-index: 20; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto;
         }
         .actions-content {
-            background: #161b22;
-            margin: 5% auto;
-            width: 90%;
-            max-width: 900px;
-            border-radius: 12px;
-            padding: 25px;
+            background: #161b22; margin: 5% auto; width: 90%; max-width: 900px;
+            border-radius: 12px; padding: 25px;
         }
-        .actions-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .search-box {
-            width: 60%;
-            padding: 10px;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #c9d1d9;
-        }
+        .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .search-box { width: 60%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
         .add-btn { background: #238636; padding: 10px 18px; font-size: 0.95rem; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
@@ -152,12 +77,14 @@
         .delete-btn { background: #b71c1c; }
         .dup-btn { background: #30363d; }
         .test-btn { background: #238636; }
-        /* Email 設定 Modal */
-        .email-settings-modal { display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
-        .email-settings-content { background: #161b22; margin: 10% auto; width: 80%; max-width: 500px; border-radius: 12px; padding: 25px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
+        .clear-log-btn { background: #b71c1c; margin-top: 15px; padding: 10px 20px; }
+        /* Log Modal 樣式 */
+        .log-entry {
+            padding: 10px; border-bottom: 1px solid #30363d; font-size: 0.95rem;
+        }
+        .log-time { color: #888; font-size: 0.85rem; }
+        .log-action { font-weight: bold; color: #4fc3f7; }
+        .log-detail { color: #ccc; }
     </style>
 </head>
 <body>
@@ -196,12 +123,10 @@
             <h2 style="margin:0;">Actions</h2>
             <button onclick="closeActionsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
-
         <div style="margin-bottom:15px;">
             <input type="text" id="searchAction" placeholder="Search..." class="search-box">
             <button onclick="addSNMPTrap()" class="add-btn">+ ADD</button>
         </div>
-
         <table>
             <thead>
                 <tr>
@@ -215,7 +140,19 @@
     </div>
 </div>
 
-<!-- 編輯 Email 設定 Modal -->
+<!-- Log Modal -->
+<div id="logModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">System Log</h2>
+            <button onclick="closeLogModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <button class="clear-log-btn" onclick="clearLog()">清除所有記錄</button>
+        <div id="logList" style="margin-top:15px; max-height:60vh; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- 編輯 Email Modal -->
 <div id="editEmailModal" class="actions-modal">
     <div class="actions-content">
         <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
@@ -236,9 +173,59 @@
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
+// Log 系統
+let logEntries = JSON.parse(localStorage.getItem("systemLog")) || [];
+
+function addLog(action, details = "") {
+    const entry = {
+        time: new Date().toLocaleString('zh-TW'),
+        action: action,
+        details: details
+    };
+    logEntries.unshift(entry); // 最新在最上面
+    localStorage.setItem("systemLog", JSON.stringify(logEntries));
+}
+
+function clearLog() {
+    if (confirm("確定要清除所有日誌記錄？")) {
+        logEntries = [];
+        localStorage.removeItem("systemLog");
+        renderLogList();
+    }
+}
+
+function renderLogList() {
+    const container = document.getElementById("logList");
+    let html = "";
+    if (logEntries.length === 0) {
+        html = "<p style='color:#888; text-align:center;'>目前沒有記錄</p>";
+    } else {
+        logEntries.forEach(entry => {
+            html += `
+                <div class="log-entry">
+                    <div class="log-time">${entry.time}</div>
+                    <div class="log-action">${entry.action}</div>
+                    ${entry.details ? `<div class="log-detail">${entry.details}</div>` : ""}
+                </div>`;
+        });
+    }
+    container.innerHTML = html;
+}
+
 // 側邊欄控制
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
+
+// Log Modal
+function showLog() {
+    closeMenu();
+    renderLogList();
+    document.getElementById("logModal").style.display = "block";
+}
+
+function closeLogModal() {
+    document.getElementById("logModal").style.display = "none";
+}
 
 // Email 設定 Modal
 function openEditEmailModal(id) {
@@ -256,10 +243,15 @@ function closeEditEmailModal() {
 function saveActionEmail() {
     const id = window.currentEditId;
     const action = actions.find(a => a.id === id);
-    action.fromEmail = document.getElementById("fromEmail").value;
-    action.toEmail = document.getElementById("toEmail").value;
+    const from = document.getElementById("fromEmail").value;
+    const to = document.getElementById("toEmail").value;
+    
+    action.fromEmail = from;
+    action.toEmail = to;
     saveActions();
-    alert("Email settings saved for " + action.name);
+    
+    addLog("修改 Email 設定", `動作: ${action.name} | From: ${from} | To: ${to}`);
+    alert("已儲存 Email 設定");
     closeEditEmailModal();
 }
 
@@ -268,6 +260,7 @@ function showActions() {
     closeMenu();
     document.getElementById("actionsModal").style.display = "block";
     renderActionList();
+    addLog("開啟 Actions 面板");
 }
 
 function closeActionsModal() {
@@ -286,7 +279,7 @@ function renderActionList() {
     let html = "";
     actions.forEach(a => {
         html += `
-            <tr class="action-row">
+            <tr>
                 <td>${a.type}</td>
                 <td>${a.name}</td>
                 <td style="text-align:right;">
@@ -301,71 +294,72 @@ function renderActionList() {
 }
 
 function addSNMPTrap() {
-    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
+    const name = prompt("輸入 SNMP Trap 動作名稱:", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
-        actions.push({ id: Date.now(), type:"SNMP Trap", name: name, fromEmail: "", toEmail: "" });
+        const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
+        actions.push(newAction);
         saveActions();
         renderActionList();
+        addLog("新增動作", name);
     }
 }
 
 function deleteAction(id) {
-    if (confirm("Confirm delete?")) {
+    if (confirm("確定刪除？")) {
+        const action = actions.find(a => a.id === id);
         actions = actions.filter(a => a.id !== id);
         saveActions();
         renderActionList();
+        addLog("刪除動作", action ? action.name : "未知");
     }
 }
 
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
-    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
-    saveActions();
-    renderActionList();
+    if (action) {
+        actions.push({ 
+            id: Date.now(), 
+            type: action.type, 
+            name: action.name + " (複製)", 
+            fromEmail: action.fromEmail, 
+            toEmail: action.toEmail 
+        });
+        saveActions();
+        renderActionList();
+        addLog("複製動作", action.name);
+    }
 }
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
+    const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
     if (!toEmail) return;
+
+    addLog("測試動作 - 準備發送 Email", `動作: ${action.name} | 收件人: ${toEmail}`);
 
     emailjs.send("FYP", "FYP", {
         to_email: toEmail,
-        subject: "SNMP Trap Alert: " + action.name,
+        subject: "SNMP Trap Alert: " + action.name + " (測試)",
         action_name: action.name,
         action_type: action.type,
         time: new Date().toLocaleString('zh-TW'),
-        message: "This is a TEST ACTION notification. Please check system status.\n\n" +
+        message: "這是一封測試通知。\n\n" +
                  "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
                  "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
                  "Flame Status: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
-        alert("Test Action sent to " + toEmail + "!");
+        addLog("Email 發送成功", `測試動作: ${action.name} → ${toEmail}`);
+        alert("測試 Email 已發送至 " + toEmail);
     }).catch((err) => {
-        alert("Send failed: " + err.text);
+        addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
+        alert("發送失敗: " + (err.text || err));
     });
 }
 
-// Log 功能（目前簡單提示，可自行擴充）
-function showLog() {
-    closeMenu();
-    alert("Log 功能目前尚未完整實作。\n\n點擊此處可顯示所有系統操作記錄（例如動作觸發、資料更新、警報發送等）。\n未來可改為顯示詳細的日誌列表。");
-}
-
-// 點擊其他地方關閉 menu
-document.addEventListener("click", function(e) {
-    const sidebar = document.getElementById("sidebar");
-    if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
-        sidebar.style.width = "0";
-    }
-});
-
-// 原有數據更新與控制
-const channelID = 3252434;
-const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.140";
-
+// 其他地方加入 log
 function updateData() {
+    addLog("手動刷新資料");
+    // 原有 fetch 程式碼...
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
@@ -402,22 +396,30 @@ function updateData() {
 }
 
 function controlLed(type, state) {
+    addLog("控制 LED", `type=${type}, state=${state}`);
     fetch(`${espIP}/led?type=${type}&state=${state}`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('HTTP 錯誤: ' + response.status);
-            }
+            if (!response.ok) throw new Error('HTTP ' + response.status);
             return response.text();
         })
         .then(text => {
-            console.log("控制成功: " + text);
+            console.log("LED 控制成功:", text);
         })
         .catch(err => {
-            console.error("控制錯誤:", err);
+            console.error("LED 控制失敗:", err);
         });
 }
 
-setInterval(updateData, 20000);
+// 自動更新
+const channelID = 3252434;
+const readAPIKey = "PKQNQOPCZYREXB6C";
+const espIP = "http://192.168.1.140";
+
+setInterval(() => {
+    addLog("自動刷新資料 (每 20 秒)");
+    updateData();
+}, 20000);
+
 updateData();
 </script>
 </body>
