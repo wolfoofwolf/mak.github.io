@@ -42,10 +42,9 @@
         .delete-btn { background:#b71c1c; }
         .dup-btn { background:#30363d; }
         .test-btn { background:#238636; }
-        .log-btn { background:#555; width:100%; padding:12px; margin-top:15px; font-weight:bold; }
 
         .log-modal { display:none; position:fixed; z-index:30; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); }
-        .log-content { background:#161b22; margin:8% auto; width:90%; max-width:700px; border-radius:12px; padding:25px; max-height:70vh; overflow-y:auto; font-size:0.9rem; line-height:1.6; }
+        .log-content { background:#161b22; margin:10% auto; width:90%; max-width:700px; border-radius:12px; padding:25px; max-height:70vh; overflow-y:auto; font-size:0.9rem; line-height:1.6; }
         .log-clear-btn { background:#f44336; width:100%; padding:12px; margin-top:15px; }
     </style>
 </head>
@@ -60,6 +59,7 @@
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showActions()">Actions</a>
+    <a href="#" onclick="showLog()">Log</a> <!-- 只加這一行 -->
 </div>
 
 <div class="container">
@@ -100,19 +100,15 @@
             </thead>
             <tbody id="actionList"></tbody>
         </table>
-
-        <!-- Log 按鈕（放在 Actions 頁面內容最下方） -->
-        <button onclick="showLog()" class="log-btn">Log</button>
     </div>
 </div>
 
-<!-- Log 視窗 -->
+<!-- Log Modal -->
 <div id="logModal" class="log-modal">
     <div class="log-content">
         <h3>系統 Log</h3>
         <div id="logContent" style="line-height:1.6; min-height:300px;"></div>
-        <button onclick="clearLog()" class="log-clear-btn">清空 Log</button>
-        <button onclick="closeLogModal()" style="margin-top:10px; width:100%; background:#f44336; padding:12px;">關閉</button>
+        <button onclick="closeLogModal()" style="margin-top:15px; width:100%; background:#f44336; padding:12px;">關閉</button>
     </div>
 </div>
 
@@ -120,31 +116,23 @@
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
-// Log 記錄陣列（最多50筆）
-let actionLog = JSON.parse(localStorage.getItem("actionLog")) || [];
+// Log 記錄
+let logHistory = JSON.parse(localStorage.getItem("logHistory")) || [];
 
 function addToLog(message) {
-    const time = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    actionLog.unshift(`[${time}] ${message}`);
-    if (actionLog.length > 50) actionLog.pop();
-    localStorage.setItem("actionLog", JSON.stringify(actionLog));
+    const time = new Date().toLocaleTimeString('zh-TW');
+    logHistory.unshift(`[${time}] ${message}`);
+    if (logHistory.length > 50) logHistory.pop();
+    localStorage.setItem("logHistory", JSON.stringify(logHistory));
 }
 
 function showLog() {
     document.getElementById("logModal").style.display = "block";
-    document.getElementById("logContent").innerHTML = actionLog.join("<br>") || "目前沒有記錄";
+    document.getElementById("logContent").innerHTML = logHistory.join("<br>") || "目前沒有記錄";
 }
 
 function closeLogModal() {
     document.getElementById("logModal").style.display = "none";
-}
-
-function clearLog() {
-    if (confirm("確定要清空所有 Log 嗎？")) {
-        actionLog = [];
-        localStorage.removeItem("actionLog");
-        showLog();
-    }
 }
 
 // 側邊欄
@@ -163,7 +151,7 @@ function closeActionsModal() {
 }
 
 let actions = JSON.parse(localStorage.getItem("actions")) || [
-    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
+    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1" }
 ];
 
 function saveActions() {
@@ -178,7 +166,7 @@ function renderActionList() {
                 <td>${a.type}</td>
                 <td>${a.name}</td>
                 <td style="text-align:right;">
-                    <button class="btn-small edit-btn" onclick="openEditEmailModal(${a.id})">✏️</button>
+                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
                     <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
                     <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
                     <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
@@ -191,7 +179,7 @@ function renderActionList() {
 function addSNMPTrap() {
     const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
-        actions.push({ id: Date.now(), type:"SNMP Trap", name: name, fromEmail: "", toEmail: "" });
+        actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
         saveActions();
         renderActionList();
         addToLog(`新增 Action: ${name}`);
@@ -221,7 +209,7 @@ function editAction(id) {
 
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
-    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
+    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
     saveActions();
     renderActionList();
     addToLog(`複製 Action: ${action.name}`);
@@ -229,26 +217,8 @@ function duplicateAction(id) {
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
-    if (!toEmail) return;
-
-    emailjs.send("FYP", "FYP", {
-        to_email: toEmail,
-        subject: "SNMP Trap Alert: " + action.name,
-        action_name: action.name,
-        action_type: action.type,
-        time: new Date().toLocaleString('zh-TW'),
-        message: "This is a TEST ACTION notification. Please check system status.\n\n" +
-                 "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
-                 "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
-                 "Flame Status: " + document.getElementById('flameDisplay').textContent
-    }).then(() => {
-        alert("Test Action sent to " + toEmail + "!");
-        addToLog(`測試 Action: ${action.name} (成功)`);
-    }).catch((err) => {
-        alert("Send failed: " + err.text);
-        addToLog(`測試 Action: ${action.name} (失敗)`);
-    });
+    alert(`Testing Action: ${action.name}\n\nSNMP Trap sent! (Simulation)`);
+    addToLog(`測試 Action: ${action.name}`);
 }
 
 // 點擊其他地方關閉 menu
