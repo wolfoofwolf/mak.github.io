@@ -6,64 +6,169 @@
     <title>溫濕度與火焰監控</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; }
-        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
-        .menu-btn { font-size:1.8rem; cursor:pointer; color:#eee; }
-        .title { font-size:1.4rem; margin:0; }
-        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
-        .data-box { background:#222; border-radius:10px; padding:20px; margin:15px 0; font-size:1.4rem; }
-        .temp { color:#ff9800; }
-        .humid { color:#4fc3f7; }
-        .flame-normal { background:#222; color:#4caf50; }
-        .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
-        .time { font-size:0.9rem; color:#888; margin-top:20px; }
-        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
-        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; transition:all 0.2s; }
-        button:hover { background:#555; }
-        button:active { transform:scale(0.98); }
-        .auto-mode { background:#2196f3; }
-        .all-off { background:#757575; }
-        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
-
-        /* 側邊欄 */
-        .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8); }
-        .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
-        .sidebar a:hover { color:#f1f1f1; }
-        .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
-
-        /* Actions & Rules Modal */
-        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
-        .modal-content { background:#161b22; margin:5% auto; width:90%; max-width:900px; border-radius:12px; padding:25px; }
-        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .search-box { width:60%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
-        .add-btn { background:#238636; padding:10px 18px; font-size:0.95rem; }
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th, td { padding:12px; text-align:left; border-bottom:1px solid #30363d; }
-        th { background:#21262d; color:#8b949e; }
-        .action-btn { padding:6px 12px; margin-right:8px; border-radius:4px; cursor:pointer; }
-        .edit-btn { background:#444c56; }
-        .delete-btn { background:#b71c1c; }
-        .dup-btn { background:#30363d; }
-        .test-btn { background:#238636; }
-
-        /* Wizard 步驟 */
-        .wizard { display:flex; justify-content:space-between; margin-bottom:20px; }
-        .wizard-step { flex:1; text-align:center; padding:10px; background:#21262d; margin:0 5px; border-radius:6px; }
-        .wizard-step.active { background:#238636; color:white; }
-        .wizard-step.completed { background:#2e7d32; color:white; }
-        .wizard-content { padding:20px; background:#21262d; border-radius:8px; }
-        .sensor-list, .action-list { max-height:300px; overflow-y:auto; }
-        .sensor-item, .action-item { padding:8px; border-bottom:1px solid #333; cursor:pointer; }
-        .sensor-item:hover, .action-item:hover { background:#30363d; }
-        .next-btn { background:#238636; padding:12px 24px; margin-top:20px; float:right; }
-        .back-btn { background:#444c56; padding:12px 24px; margin-top:20px; float:left; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #111;
+            color: #eee;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+        .menu-btn {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #eee;
+        }
+        .title {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .data-box {
+            background: #222;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4rem;
+        }
+        .temp { color: #ff9800; }
+        .humid { color: #4fc3f7; }
+        .flame-normal { background: #222; color: #4caf50; }
+        .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
+        .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            transition: all 0.2s;
+        }
+        button:hover { background: #555; }
+        button:active { transform: scale(0.98); }
+        .auto-mode { background: #2196f3; }
+        .all-off { background: #757575; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        /* Sidebar */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            background: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
+        .sidebar a {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: #ccc;
+            display: block;
+        }
+        .sidebar a:hover { color: #f1f1f1; }
+        .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 36px;
+        }
+        /* Actions Modal */
+        .actions-modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            overflow-y: auto;
+        }
+        .actions-content {
+            background: #161b22;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        .actions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            width: 60%;
+            padding: 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+        }
+        .add-btn { background: #238636; padding: 10px 18px; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #8b949e; }
+        .action-btn { padding: 6px 12px; margin-right: 8px; border-radius: 4px; cursor: pointer; }
+        .edit-btn { background: #444c56; }
+        .delete-btn { background: #b71c1c; }
+        .dup-btn { background: #30363d; }
+        .test-btn { background: #238636; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div class="menu-btn" onclick="openMenu()">☰</div>
-    <h1 class="title">溫濕度與火焰監控</h1>
+    <h1 class="title">Temperature & Humidity Monitor</h1>
     <div></div>
 </div>
 
@@ -86,12 +191,12 @@
     </div>
 </div>
 
-<div class="version">Version: v2.0 - 2026/02/06</div>
+<div class="version">Version: v1.9 - 2026/02/06</div>
 
 <!-- Actions Modal -->
-<div id="actionsModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
+<div id="actionsModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
             <h2 style="margin:0;">Actions</h2>
             <button onclick="closeActionsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
@@ -114,60 +219,6 @@
     </div>
 </div>
 
-<!-- Notification Rules Modal -->
-<div id="rulesModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 style="margin:0;">Notification Rules</h2>
-            <button onclick="closeRulesModal()" style="background:#f44336; padding:8px 16px;">Close</button>
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <input type="text" id="searchRule" placeholder="Search..." class="search-box">
-            <button onclick="openRuleWizard()" class="add-btn">+ ADD</button>
-            <button onclick="refreshRules()" style="background:#444c56; padding:10px 18px;">Refresh</button>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Enable</th>
-                    <th>Sensor Name</th>
-                    <th>Status</th>
-                    <th>Action Name</th>
-                    <th>Escalation</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="ruleList"></tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Rule Wizard Modal -->
-<div id="ruleWizardModal" class="modal">
-    <div class="modal-content">
-        <h2>Notification Rule Wizard</h2>
-        <div class="wizard">
-            <div class="wizard-step" id="wizardStep1">1 Sensors</div>
-            <div class="wizard-step" id="wizardStep2">2 Actions</div>
-            <div class="wizard-step" id="wizardStep3">3 Continuous Time</div>
-            <div class="wizard-step" id="wizardStep4">4 Minimum Time</div>
-            <div class="wizard-step" id="wizardStep5">5 Escalation</div>
-        </div>
-
-        <div class="wizard-content" id="wizardContent">
-            <!-- 內容動態載入 -->
-        </div>
-
-        <div style="margin-top:20px;">
-            <button class="back-btn" onclick="wizardBack()">BACK</button>
-            <button class="next-btn" onclick="wizardNext()">NEXT</button>
-            <button onclick="closeRuleWizard()" style="float:right; background:#f44336;">CANCEL</button>
-        </div>
-    </div>
-</div>
-
 <script>
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
@@ -176,131 +227,146 @@ emailjs.init("DesLsbj7IJqknmZFq");
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Notification Rules
-function showNotificationRules() {
+// Actions 管理
+function showActions() {
     closeMenu();
-    document.getElementById("rulesModal").style.display = "block";
-    renderRuleList();
+    document.getElementById("actionsModal").style.display = "block";
+    renderActionList();
 }
 
-function closeRulesModal() {
-    document.getElementById("rulesModal").style.display = "none";
+function closeActionsModal() {
+    document.getElementById("actionsModal").style.display = "none";
 }
 
-let rules = JSON.parse(localStorage.getItem("rules")) || [];
+let actions = JSON.parse(localStorage.getItem("actions")) || [
+    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1" }
+];
 
-function saveRules() {
-    localStorage.setItem("rules", JSON.stringify(rules));
+function saveActions() {
+    localStorage.setItem("actions", JSON.stringify(actions));
 }
 
-function renderRuleList() {
+function renderActionList() {
     let html = "";
-    rules.forEach(r => {
+    actions.forEach(a => {
         html += `
-            <tr>
-                <td><input type="checkbox" ${r.enable ? 'checked' : ''} disabled></td>
-                <td>${r.sensor}</td>
-                <td>${r.status}</td>
-                <td>${r.action}</td>
-                <td>${r.escalation || '-'}</td>
+            <tr class="action-row">
+                <td>${a.type}</td>
+                <td>${a.name}</td>
                 <td style="text-align:right;">
-                    <button onclick="editRule(${r.id})">✏️</button>
-                    <button style="background:#b71c1c;" onclick="deleteRule(${r.id})">🗑️</button>
+                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
+                    <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
+                    <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
+                    <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
                 </td>
             </tr>`;
     });
-    document.getElementById("ruleList").innerHTML = html || "<tr><td colspan='6'>No Items</td></tr>";
+    document.getElementById("actionList").innerHTML = html || "<tr><td colspan='3'>No Actions</td></tr>";
 }
 
-function openRuleWizard() {
-    document.getElementById("ruleWizardModal").style.display = "block";
-    wizardStep = 1;
-    updateWizard();
-}
-
-function closeRuleWizard() {
-    document.getElementById("ruleWizardModal").style.display = "none";
-}
-
-let wizardStep = 1;
-let newRule = {};
-
-function updateWizard() {
-    const content = document.getElementById("wizardContent");
-    const steps = document.querySelectorAll(".wizard-step");
-    steps.forEach((s, i) => s.className = "wizard-step" + (i+1 === wizardStep ? " active" : (i+1 < wizardStep ? " completed" : "")));
-
-    if (wizardStep === 1) {
-        content.innerHTML = `
-            <h3>Choose sensor and status that will trigger the notification</h3>
-            <div style="display:flex; gap:20px;">
-                <div style="flex:1;">
-                    <input type="text" placeholder="Search..." style="width:100%; padding:10px; margin-bottom:10px;">
-                    <div class="sensor-list">
-                        <div class="sensor-item">Temperature</div>
-                        <div class="sensor-item">Humidity</div>
-                        <div class="sensor-item">Flame Status</div>
-                    </div>
-                </div>
-                <div style="flex:1;">
-                    <h4>Status</h4>
-                    <label><input type="checkbox"> High</label><br>
-                    <label><input type="checkbox"> Low</label><br>
-                    <label><input type="checkbox"> Normal</label>
-                </div>
-            </div>`;
-    } else if (wizardStep === 2) {
-        content.innerHTML = `
-            <h3>Choose actions to be triggered</h3>
-            <div class="action-list">
-                ${actions.map(a => `<div class="action-item"><label><input type="checkbox"> ${a.name}</label></div>`).join('')}
-            </div>`;
-    } else if (wizardStep === 3) {
-        content.innerHTML = `
-            <h3>Continuous Time</h3>
-            <label>Continuous Time for sensor to be in status (seconds): <input type="number" value="0" style="width:100px;"></label>`;
-    } else if (wizardStep === 4) {
-        content.innerHTML = `
-            <h3>Minimum Time between each Notification</h3>
-            <label>Minimum Time (seconds): <input type="number" value="0" style="width:100px;"></label>`;
-    } else if (wizardStep === 5) {
-        content.innerHTML = `
-            <h3>Escalation</h3>
-            <label><input type="checkbox"> Enable Escalation</label><br>
-            <label>Escalation Level: <select><option>Level 1</option><option>Level 2</option></select></label>`;
+function addSNMPTrap() {
+    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
+    if (name) {
+        actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
+        saveActions();
+        renderActionList();
     }
 }
 
-function wizardNext() {
-    if (wizardStep < 5) {
-        wizardStep++;
-        updateWizard();
-    } else {
-        // 完成，建立新規則（模擬）
-        rules.push({
-            id: Date.now(),
-            sensor: "Temperature",
-            status: "High",
-            action: "SNMP Trap Action 1",
-            enable: true,
-            escalation: "None"
+function deleteAction(id) {
+    if (confirm("Confirm delete?")) {
+        actions = actions.filter(a => a.id !== id);
+        saveActions();
+        renderActionList();
+    }
+}
+
+function editAction(id) {
+    const action = actions.find(a => a.id === id);
+    const newName = prompt("Edit Action Name:", action.name);
+    if (newName) {
+        action.name = newName;
+        saveActions();
+        renderActionList();
+    }
+}
+
+function duplicateAction(id) {
+    const action = actions.find(a => a.id === id);
+    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
+    saveActions();
+    renderActionList();
+}
+
+function testAction(id) {
+    const action = actions.find(a => a.id === id);
+    alert(`Testing Action: ${action.name}\n\nSNMP Trap sent! (Simulation)`);
+}
+
+// 點擊其他地方關閉 menu
+document.addEventListener("click", function(e) {
+    const sidebar = document.getElementById("sidebar");
+    if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+        sidebar.style.width = "0";
+    }
+});
+
+// 原有數據更新與控制
+const channelID = 3252434;
+const readAPIKey = "PKQNQOPCZYREXB6C";
+const espIP = "http://192.168.1.140";
+
+function updateData() {
+    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
+        .then(r => r.json())
+        .then(d => {
+            const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
+            document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
         });
-        saveRules();
-        renderRuleList();
-        closeRuleWizard();
-        alert("新 Notification Rule 已建立！");
-    }
+
+    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
+        .then(r => r.json())
+        .then(d => {
+            const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
+            document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
+        });
+
+    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
+        .then(r => r.json())
+        .then(d => {
+            const flame = d.field3;
+            let text = '--';
+            let cls = 'flame-normal';
+            if (flame == 0) {
+                text = "Flame Detected! 🔥";
+                cls = 'flame-alert';
+            } else if (flame == 1) {
+                text = "No Flame ✅";
+                cls = 'flame-normal';
+            }
+            document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
+            document.getElementById('flameBox').className = 'data-box ' + cls;
+        });
+
+    document.getElementById('updateTime').textContent = 
+        `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 }
 
-function wizardBack() {
-    if (wizardStep > 1) {
-        wizardStep--;
-        updateWizard();
-    }
+function controlLed(type, state) {
+    fetch(`${espIP}/led?type=${type}&state=${state}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP 錯誤: ' + response.status);
+            }
+            return response.text();
+        })
+        .then(text => {
+            console.log("控制成功: " + text);
+        })
+        .catch(err => {
+            console.error("控制錯誤:", err);
+        });
 }
-
-// 其他原有功能（updateData、controlLed 等）保持原樣
-// ... 請把你原本的 updateData、controlLed 等函數貼在這裡 ...
 
 setInterval(updateData, 20000);
 updateData();
