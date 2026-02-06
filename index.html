@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>溫濕度與火焰監控</title>
+    <title>Temperature & Humidity Monitor</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: system-ui, sans-serif;
             background: #111;
             color: #eee;
             min-height: 100vh;
@@ -69,6 +69,7 @@
             transition: all 0.2s;
         }
         button:hover { background: #555; }
+        button:active { transform: scale(0.98); }
         .auto-mode { background: #2196f3; }
         .all-off { background: #757575; }
         .version {
@@ -81,6 +82,7 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
+        /* 側邊欄 */
         .sidebar {
             height: 100%;
             width: 0;
@@ -107,6 +109,7 @@
             right: 25px;
             font-size: 36px;
         }
+        /* Actions Modal */
         .actions-modal {
             display: none;
             position: fixed;
@@ -149,6 +152,12 @@
         .delete-btn { background: #b71c1c; }
         .dup-btn { background: #30363d; }
         .test-btn { background: #238636; }
+        /* Email 設定 Modal */
+        .email-settings-modal { display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        .email-settings-content { background: #161b22; margin: 10% auto; width: 80%; max-width: 500px; border-radius: 12px; padding: 25px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
     </style>
 </head>
 <body>
@@ -165,18 +174,9 @@
 </div>
 
 <div class="container">
-    <div class="data-box">
-        <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
-    </div>
-
-    <div class="data-box">
-        <span class="humid" id="humidDisplay">Humidity: -- % 💧</span>
-    </div>
-
-    <div class="data-box" id="flameBox">
-        <span id="flameDisplay">Flame Status: -- 🔥</span>
-    </div>
-
+    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
+    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
+    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
     <div class="time" id="updateTime">Last updated: loading...</div>
 
     <div class="buttons">
@@ -214,13 +214,53 @@
     </div>
 </div>
 
+<!-- 編輯 Email 設定 Modal -->
+<div id="editEmailModal" class="actions-modal">
+    <div class="actions-content">
+        <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
+        <div class="input-group">
+            <label>From Email (Sender)</label>
+            <input type="email" id="fromEmail" placeholder="yourname@example.com">
+        </div>
+        <div class="input-group">
+            <label>To Email (Receiver)</label>
+            <input type="email" id="toEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <button onclick="saveActionEmail()" style="background:#238636; width:100%; padding:12px; margin-top:10px;">Save</button>
+        <button onclick="closeEditEmailModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">Cancel</button>
+    </div>
+</div>
+
 <script>
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
-// 側邊欄
+// 側邊欄控制
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
+
+// Email 設定 Modal
+function openEditEmailModal(id) {
+    document.getElementById("editEmailModal").style.display = "block";
+    window.currentEditId = id;
+    const action = actions.find(a => a.id === id);
+    document.getElementById("fromEmail").value = action.fromEmail || "";
+    document.getElementById("toEmail").value = action.toEmail || "";
+}
+
+function closeEditEmailModal() {
+    document.getElementById("editEmailModal").style.display = "none";
+}
+
+function saveActionEmail() {
+    const id = window.currentEditId;
+    const action = actions.find(a => a.id === id);
+    action.fromEmail = document.getElementById("fromEmail").value;
+    action.toEmail = document.getElementById("toEmail").value;
+    saveActions();
+    alert("Email settings saved for " + action.name);
+    closeEditEmailModal();
+}
 
 // Actions 管理
 function showActions() {
@@ -249,14 +289,14 @@ function renderActionList() {
                 <td>${a.type}</td>
                 <td>${a.name}</td>
                 <td style="text-align:right;">
-                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
+                    <button class="btn-small edit-btn" onclick="openEditEmailModal(${a.id})">✏️</button>
                     <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
                     <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
                     <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
                 </td>
             </tr>`;
     });
-    document.getElementById("actionList").innerHTML = html || "<tr><td colspan='3'>No Actions</td></tr>";
+    document.getElementById("actionList").innerHTML = html;
 }
 
 function addSNMPTrap() {
@@ -276,23 +316,6 @@ function deleteAction(id) {
     }
 }
 
-function editAction(id) {
-    const action = actions.find(a => a.id === id);
-    
-    // 跳出三個 prompt 設定名稱 + 寄件人 + 收件人
-    const newName = prompt("修改 Action 名稱：", action.name);
-    const fromEmail = prompt("設定寄件人 Email (From)：", action.fromEmail || "");
-    const toEmail = prompt("設定收件人 Email (To)：", action.toEmail || "makmingkit144@gmail.com");
-
-    if (newName) action.name = newName;
-    action.fromEmail = fromEmail;
-    action.toEmail = toEmail;
-
-    saveActions();
-    renderActionList();
-    alert("Action 已更新！\n名稱：" + newName + "\n寄件人：" + fromEmail + "\n收件人：" + toEmail);
-}
-
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
     actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
@@ -302,7 +325,7 @@ function duplicateAction(id) {
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || prompt("請輸入收件人 Email：", "makmingkit144@gmail.com");
+    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
     if (!toEmail) return;
 
     emailjs.send("FYP", "FYP", {
@@ -311,14 +334,14 @@ function testAction(id) {
         action_name: action.name,
         action_type: action.type,
         time: new Date().toLocaleString('zh-TW'),
-        message: "這是 TEST ACTION 測試通知，請確認系統狀態。\n\n" +
-                 "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
-                 "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
-                 "火焰狀態: " + document.getElementById('flameDisplay').textContent
+        message: "This is a TEST ACTION notification. Please check system status.\n\n" +
+                 "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
+                 "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
+                 "Flame Status: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
-        alert("Test Action 成功發送 Email 到 " + toEmail + "！");
+        alert("Test Action sent to " + toEmail + "!");
     }).catch((err) => {
-        alert("發送失敗：" + err.text);
+        alert("Send failed: " + err.text);
     });
 }
 
