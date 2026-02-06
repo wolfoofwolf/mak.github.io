@@ -4,50 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>溫濕度與火焰監控</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; min-height:100vh; }
-        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
-        .menu-btn { font-size:1.8rem; cursor:pointer; color:#eee; }
-        .title { font-size:1.4rem; margin:0; }
-        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
-        .data-box { background:#222; border-radius:10px; padding:20px; margin:15px 0; font-size:1.4rem; }
-        .temp { color:#ff9800; }
-        .humid { color:#4fc3f7; }
-        .flame-normal { background:#222; color:#4caf50; }
-        .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
-        .time { font-size:0.9rem; color:#888; margin-top:20px; }
-        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
-        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; transition:all 0.2s; }
-        button:hover { background:#555; }
-        button:active { transform:scale(0.98); }
-        .auto-mode { background:#2196f3; }
-        .all-off { background:#757575; }
-        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
-
-        /* Sidebar */
-        .sidebar {
-            height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8);
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+            background: #111;
+            color: #eee;
+            min-height: 100vh;
         }
-        .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
-        .sidebar a:hover { color:#f1f1f1; }
-        .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
-
+        .top-bar {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+        .menu-btn {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #eee;
+        }
+        .title {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .data-box {
+            background: #222;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4rem;
+        }
+        .temp { color: #ff9800; }
+        .humid { color: #4fc3f7; }
+        .flame-normal { background: #222; color: #4caf50; }
+        .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
+        .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            transition: all 0.2s;
+        }
+        button:hover { background: #555; }
+        button:active { transform: scale(0.98); }
+        .auto-mode { background: #2196f3; }
+        .all-off { background: #757575; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        /* 側邊欄 */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            background: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
+        .sidebar a {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: #ccc;
+            display: block;
+        }
+        .sidebar a:hover { color: #f1f1f1; }
+        .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 36px;
+        }
         /* Modal */
-        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
-        .modal-content { background:#161b22; margin:5% auto; width:90%; max-width:900px; border-radius:12px; padding:25px; }
-        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .search-box { width:60%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
-        .add-btn { background:#238636; padding:10px 18px; font-size:0.95rem; }
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th, td { padding:12px; text-align:left; border-bottom:1px solid #30363d; }
-        th { background:#21262d; color:#8b949e; }
-        .action-btn { padding:6px 12px; margin-right:8px; border-radius:4px; cursor:pointer; }
-        .edit-btn { background:#444c56; }
-        .delete-btn { background:#b71c1c; }
-        .dup-btn { background:#30363d; }
-        .test-btn { background:#238636; }
-        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: #161b22;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .wizard {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .wizard-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #21262d;
+            margin: 0 5px;
+            border-radius: 6px;
+        }
+        .wizard-step.active { background: #238636; color: white; }
+        .wizard-step.completed { background: #2e7d32; color: white; }
+        .wizard-content { padding: 20px; background: #21262d; border-radius: 8px; }
+        .next-btn { background: #238636; padding: 12px 24px; margin-top: 20px; float: right; }
+        .back-btn { background: #444c56; padding: 12px 24px; margin-top: 20px; float: left; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #eee; }
     </style>
 </head>
 <body>
@@ -86,7 +193,7 @@
     </div>
 </div>
 
-<div class="version">版本：v2.0 - 2026/02/06</div>
+<div class="version">版本：v2.1 - 2026/02/06</div>
 
 <!-- Actions Modal -->
 <div id="actionsModal" class="modal">
@@ -148,7 +255,7 @@
     <div class="modal-content">
         <h2>Notification Rule Wizard</h2>
         <div class="wizard">
-            <div class="wizard-step" id="wizardStep1">1 Sensors</div>
+            <div class="wizard-step active" id="wizardStep1">1 Sensors</div>
             <div class="wizard-step" id="wizardStep2">2 Actions</div>
             <div class="wizard-step" id="wizardStep3">3 Continuous Time</div>
         </div>
@@ -195,7 +302,7 @@ function renderRuleList() {
             <tr>
                 <td><input type="checkbox" ${r.enable ? 'checked' : ''} disabled></td>
                 <td>${r.sensor}</td>
-                <td>${r.status}</td>
+                <td>${r.status.join(', ')}</td>
                 <td>${r.action}</td>
                 <td>${r.continuousTime || '-'} s</td>
                 <td style="text-align:right;">
@@ -235,7 +342,7 @@ function updateWizard() {
             <div style="display:flex; gap:20px;">
                 <div style="flex:1;">
                     <h4>Sensor</h4>
-                    <label><input type="checkbox" id="tempSensor"> Temperature</label><br>
+                    <label><input type="checkbox" id="tempSensor" checked> Temperature</label><br>
                 </div>
                 <div style="flex:1;">
                     <h4>Status</h4>
@@ -305,8 +412,146 @@ function wizardBack() {
     }
 }
 
-// 其他原有功能（updateData、controlLed 等）保持原樣
-// ... 請把你原本的 updateData、controlLed 等函數貼在這裡 ...
+// Actions 管理
+function showActions() {
+    closeMenu();
+    document.getElementById("actionsModal").style.display = "block";
+    renderActionList();
+}
+
+function closeActionsModal() {
+    document.getElementById("actionsModal").style.display = "none";
+}
+
+let actions = JSON.parse(localStorage.getItem("actions")) || [
+    { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1" }
+];
+
+function saveActions() {
+    localStorage.setItem("actions", JSON.stringify(actions));
+}
+
+function renderActionList() {
+    let html = "";
+    actions.forEach(a => {
+        html += `
+            <tr class="action-row">
+                <td>${a.type}</td>
+                <td>${a.name}</td>
+                <td style="text-align:right;">
+                    <button class="btn-small edit-btn" onclick="editAction(${a.id})">✏️</button>
+                    <button class="btn-small delete-btn" onclick="deleteAction(${a.id})">🗑️</button>
+                    <button class="btn-small" onclick="duplicateAction(${a.id})">DUPLICATE</button>
+                    <button class="btn-small test-btn" onclick="testAction(${a.id})">TEST ACTION</button>
+                </td>
+            </tr>`;
+    });
+    document.getElementById("actionList").innerHTML = html || "<tr><td colspan='3'>No Actions</td></tr>";
+}
+
+function addSNMPTrap() {
+    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
+    if (name) {
+        actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
+        saveActions();
+        renderActionList();
+    }
+}
+
+function deleteAction(id) {
+    if (confirm("Confirm delete?")) {
+        actions = actions.filter(a => a.id !== id);
+        saveActions();
+        renderActionList();
+    }
+}
+
+function editAction(id) {
+    const action = actions.find(a => a.id === id);
+    const newName = prompt("Edit Action Name:", action.name);
+    if (newName) {
+        action.name = newName;
+        saveActions();
+        renderActionList();
+    }
+}
+
+function duplicateAction(id) {
+    const action = actions.find(a => a.id === id);
+    actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
+    saveActions();
+    renderActionList();
+}
+
+function testAction(id) {
+    const action = actions.find(a => a.id === id);
+    alert(`Testing Action: ${action.name}\n\nSNMP Trap sent! (Simulation)`);
+}
+
+// 點擊其他地方關閉 menu
+document.addEventListener("click", function(e) {
+    const sidebar = document.getElementById("sidebar");
+    if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+        sidebar.style.width = "0";
+    }
+});
+
+// 原有數據更新與控制
+const channelID = 3252434;
+const readAPIKey = "PKQNQOPCZYREXB6C";
+const espIP = "http://192.168.1.140";
+
+function updateData() {
+    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
+        .then(r => r.json())
+        .then(d => {
+            const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
+            document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
+        });
+
+    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
+        .then(r => r.json())
+        .then(d => {
+            const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
+            document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
+        });
+
+    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
+        .then(r => r.json())
+        .then(d => {
+            const flame = d.field3;
+            let text = '--';
+            let cls = 'flame-normal';
+            if (flame == 0) {
+                text = "Flame Detected! 🔥";
+                cls = 'flame-alert';
+            } else if (flame == 1) {
+                text = "No Flame ✅";
+                cls = 'flame-normal';
+            }
+            document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
+            document.getElementById('flameBox').className = 'data-box ' + cls;
+        });
+
+    document.getElementById('updateTime').textContent = 
+        `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+}
+
+function controlLed(type, state) {
+    fetch(`${espIP}/led?type=${type}&state=${state}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP 錯誤: ' + response.status);
+            }
+            return response.text();
+        })
+        .then(text => {
+            console.log("控制成功: " + text);
+        })
+        .catch(err => {
+            console.error("控制錯誤:", err);
+        });
+}
 
 setInterval(updateData, 20000);
 updateData();
