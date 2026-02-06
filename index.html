@@ -86,7 +86,7 @@
 
         <div class="buttons">
             <button onclick="updateData()">Refresh Data</button>
-            <button class="green-on" onclick="controlLed('green', 1)">All Green ON</button>
+            <button class="green-on" onclick="controlLed('green', 1)">All Green ON (Auto Mode)</button>
             <button class="green-off" onclick="controlLed('green', 0)">All Green OFF</button>
             <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
         </div>
@@ -140,7 +140,7 @@
                     alert("控制成功: " + text);
                 })
                 .catch(err => {
-                    alert("控制失敗，請確認 ESP32 是否在線");
+                    alert("控制失敗，請確認 ESP32 是否在線 (IP: 192.168.1.140)");
                     console.error(err);
                 });
         }
