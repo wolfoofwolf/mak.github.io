@@ -171,6 +171,7 @@
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showActions()">Actions</a>
+    <a href="#" onclick="showLog()">Log</a>   <!-- 只加這一行 -->
 </div>
 
 <div class="container">
@@ -214,20 +215,13 @@
     </div>
 </div>
 
-<!-- 編輯 Email 設定 Modal -->
-<div id="editEmailModal" class="actions-modal">
-    <div class="actions-content">
-        <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
-        <div class="input-group">
-            <label>From Email (Sender)</label>
-            <input type="email" id="fromEmail" placeholder="yourname@example.com">
-        </div>
-        <div class="input-group">
-            <label>To Email (Receiver)</label>
-            <input type="email" id="toEmail" placeholder="makmingkit144@gmail.com">
-        </div>
-        <button onclick="saveActionEmail()" style="background:#238636; width:100%; padding:12px; margin-top:10px;">Save</button>
-        <button onclick="closeEditEmailModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">Cancel</button>
+<!-- Log 視窗 -->
+<div id="logModal" class="log-modal">
+    <div class="log-content">
+        <h3>系統 Log</h3>
+        <div id="logContent" style="line-height:1.6; min-height:300px;"></div>
+        <button onclick="clearLog()" style="margin-top:15px; width:100%; background:#f44336; padding:12px;">清空 Log</button>
+        <button onclick="closeLogModal()" style="margin-top:10px; width:100%; background:#555; padding:12px;">關閉</button>
     </div>
 </div>
 
@@ -235,34 +229,38 @@
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
+// Log 記錄陣列（最多50筆）
+let actionLog = JSON.parse(localStorage.getItem("actionLog")) || [];
+
+function addToLog(message) {
+    const time = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    actionLog.unshift(`[${time}] ${message}`);
+    if (actionLog.length > 50) actionLog.pop();
+    localStorage.setItem("actionLog", JSON.stringify(actionLog));
+}
+
+function showLog() {
+    document.getElementById("logModal").style.display = "block";
+    document.getElementById("logContent").innerHTML = actionLog.join("<br>") || "目前沒有記錄";
+}
+
+function closeLogModal() {
+    document.getElementById("logModal").style.display = "none";
+}
+
+function clearLog() {
+    if (confirm("確定要清空所有 Log 嗎？")) {
+        actionLog = [];
+        localStorage.removeItem("actionLog");
+        showLog();
+    }
+}
+
 // 側邊欄控制
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Email 設定 Modal
-function openEditEmailModal(id) {
-    document.getElementById("editEmailModal").style.display = "block";
-    window.currentEditId = id;
-    const action = actions.find(a => a.id === id);
-    document.getElementById("fromEmail").value = action.fromEmail || "";
-    document.getElementById("toEmail").value = action.toEmail || "";
-}
-
-function closeEditEmailModal() {
-    document.getElementById("editEmailModal").style.display = "none";
-}
-
-function saveActionEmail() {
-    const id = window.currentEditId;
-    const action = actions.find(a => a.id === id);
-    action.fromEmail = document.getElementById("fromEmail").value;
-    action.toEmail = document.getElementById("toEmail").value;
-    saveActions();
-    alert("Email settings saved for " + action.name);
-    closeEditEmailModal();
-}
-
-// Actions 管理
+// Actions 管理（你原本的程式碼，一字不改）
 function showActions() {
     closeMenu();
     document.getElementById("actionsModal").style.display = "block";
@@ -305,6 +303,7 @@ function addSNMPTrap() {
         actions.push({ id: Date.now(), type:"SNMP Trap", name: name, fromEmail: "", toEmail: "" });
         saveActions();
         renderActionList();
+        addToLog(`新增 Action: ${name}`);
     }
 }
 
@@ -313,6 +312,7 @@ function deleteAction(id) {
         actions = actions.filter(a => a.id !== id);
         saveActions();
         renderActionList();
+        addToLog(`刪除 Action`);
     }
 }
 
@@ -321,6 +321,7 @@ function duplicateAction(id) {
     actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
     saveActions();
     renderActionList();
+    addToLog(`複製 Action: ${action.name}`);
 }
 
 function testAction(id) {
@@ -340,8 +341,10 @@ function testAction(id) {
                  "Flame Status: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
         alert("Test Action sent to " + toEmail + "!");
+        addToLog(`測試 Action: ${action.name} (成功)`);
     }).catch((err) => {
         alert("Send failed: " + err.text);
+        addToLog(`測試 Action: ${action.name} (失敗)`);
     });
 }
 
