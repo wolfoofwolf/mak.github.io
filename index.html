@@ -152,12 +152,9 @@
         .delete-btn { background: #b71c1c; }
         .dup-btn { background: #30363d; }
         .test-btn { background: #238636; }
-        /* Email 設定 Modal */
-        .email-settings-modal { display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
-        .email-settings-content { background: #161b22; margin: 10% auto; width: 80%; max-width: 500px; border-radius: 12px; padding: 25px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
+        /* Log Modal */
+        .log-modal { display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
+        .log-content { background: #161b22; margin: 10% auto; width: 90%; max-width: 700px; border-radius: 12px; padding: 25px; max-height: 70vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -171,7 +168,7 @@
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showActions()">Actions</a>
-    <a href="#" onclick="showLog()">Log</a>   <!-- 只加這一行 -->
+    <a href="#" onclick="showLog()">Log</a>  <!-- 只加這一行 -->
 </div>
 
 <div class="container">
@@ -215,13 +212,13 @@
     </div>
 </div>
 
-<!-- Log 視窗 -->
+<!-- Log Modal -->
 <div id="logModal" class="log-modal">
     <div class="log-content">
         <h3>系統 Log</h3>
         <div id="logContent" style="line-height:1.6; min-height:300px;"></div>
         <button onclick="clearLog()" style="margin-top:15px; width:100%; background:#f44336; padding:12px;">清空 Log</button>
-        <button onclick="closeLogModal()" style="margin-top:10px; width:100%; background:#555; padding:12px;">關閉</button>
+        <button onclick="closeLogModal()" style="margin-top:10px; width:100%; background:#f44336; padding:12px;">關閉</button>
     </div>
 </div>
 
@@ -229,19 +226,19 @@
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
-// Log 記錄陣列（最多50筆）
-let actionLog = JSON.parse(localStorage.getItem("actionLog")) || [];
+// Log 記錄陣列
+let logHistory = JSON.parse(localStorage.getItem("logHistory")) || [];
 
 function addToLog(message) {
-    const time = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    actionLog.unshift(`[${time}] ${message}`);
-    if (actionLog.length > 50) actionLog.pop();
-    localStorage.setItem("actionLog", JSON.stringify(actionLog));
+    const time = new Date().toLocaleTimeString('zh-TW');
+    logHistory.unshift(`[${time}] ${message}`);
+    if (logHistory.length > 50) logHistory.pop();
+    localStorage.setItem("logHistory", JSON.stringify(logHistory));
 }
 
 function showLog() {
     document.getElementById("logModal").style.display = "block";
-    document.getElementById("logContent").innerHTML = actionLog.join("<br>") || "目前沒有記錄";
+    document.getElementById("logContent").innerHTML = logHistory.join("<br>") || "目前沒有記錄";
 }
 
 function closeLogModal() {
@@ -249,14 +246,14 @@ function closeLogModal() {
 }
 
 function clearLog() {
-    if (confirm("確定要清空所有 Log 嗎？")) {
-        actionLog = [];
-        localStorage.removeItem("actionLog");
+    if (confirm("確定要清空 Log 嗎？")) {
+        logHistory = [];
+        localStorage.removeItem("logHistory");
         showLog();
     }
 }
 
-// 側邊欄控制
+// 側邊欄
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
@@ -316,12 +313,23 @@ function deleteAction(id) {
     }
 }
 
+function editAction(id) {
+    const action = actions.find(a => a.id === id);
+    const newName = prompt("Edit Action Name:", action.name);
+    if (newName) {
+        action.name = newName;
+        saveActions();
+        renderActionList();
+        addToLog(`修改 Action`);
+    }
+}
+
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
     actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)", fromEmail: action.fromEmail, toEmail: action.toEmail });
     saveActions();
     renderActionList();
-    addToLog(`複製 Action: ${action.name}`);
+    addToLog(`複製 Action`);
 }
 
 function testAction(id) {
@@ -341,10 +349,10 @@ function testAction(id) {
                  "Flame Status: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
         alert("Test Action sent to " + toEmail + "!");
-        addToLog(`測試 Action: ${action.name} (成功)`);
+        addToLog(`測試 Action: ${action.name}`);
     }).catch((err) => {
         alert("Send failed: " + err.text);
-        addToLog(`測試 Action: ${action.name} (失敗)`);
+        addToLog(`測試 Action 失敗`);
     });
 }
 
@@ -356,7 +364,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// 原有數據更新與控制
+// 原有數據更新與控制（一字不改）
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
