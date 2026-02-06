@@ -18,18 +18,20 @@
         .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
         .time { font-size:0.9rem; color:#888; margin-top:20px; }
         .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
-        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; }
+        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; transition:all 0.2s; }
         button:hover { background:#555; }
         .auto-mode { background:#2196f3; }
         .all-off { background:#757575; }
         .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
 
+        /* 側邊欄 */
         .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8); }
         .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
         .sidebar a:hover { color:#f1f1f1; }
         .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
 
-        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
+        /* 小視窗 */
+        .modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); }
         .modal-content { background:#161b22; margin:10% auto; width:90%; max-width:500px; border-radius:12px; padding:25px; }
     </style>
 </head>
@@ -48,9 +50,18 @@
 </div>
 
 <div class="container">
-    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
-    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
-    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
+    <div class="data-box">
+        <span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span>
+    </div>
+
+    <div class="data-box">
+        <span class="humid" id="humidDisplay">Humidity: -- % 💧</span>
+    </div>
+
+    <div class="data-box" id="flameBox">
+        <span id="flameDisplay">Flame Status: -- 🔥</span>
+    </div>
+
     <div class="time" id="updateTime">Last updated: loading...</div>
 
     <div class="buttons">
@@ -66,26 +77,26 @@
 <div id="rulesModal" class="modal">
     <div class="modal-content">
         <h2>Notification Rules</h2>
-        <p>當溫度達到以下範圍時自動發送 Email</p>
-        
-        <label><input type="checkbox" id="range1"> 0 - 20 °C</label><br>
-        <label><input type="checkbox" id="range2"> 20 - 30 °C</label><br>
-        <label><input type="checkbox" id="range3"> 30 - 35 °C</label><br><br>
+        <p>當溫度進入以下範圍時自動發送 Email</p>
 
-        <button onclick="saveRule()" style="background:#238636; width:100%; padding:12px;">Save Rule</button>
-        <button onclick="closeRulesModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">Cancel</button>
+        <label><input type="checkbox" id="r1"> 0 - 20 °C</label><br>
+        <label><input type="checkbox" id="r2"> 20 - 30 °C</label><br>
+        <label><input type="checkbox" id="r3"> 30 - 35 °C</label><br><br>
+
+        <button onclick="saveRule()" style="background:#238636; width:100%; padding:12px;">儲存規則</button>
+        <button onclick="closeRulesModal()" style="background:#f44336; width:100%; padding:12px; margin-top:10px;">取消</button>
     </div>
 </div>
 
 <script>
-// EmailJS 初始化
+// EmailJS 初始化（你的 Key）
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // 側邊欄
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Notification Rules
+// Notification Rules 小視窗
 function showNotificationRules() {
     closeMenu();
     document.getElementById("rulesModal").style.display = "block";
@@ -96,9 +107,9 @@ function closeRulesModal() {
 }
 
 function saveRule() {
-    const r1 = document.getElementById("range1").checked;
-    const r2 = document.getElementById("range2").checked;
-    const r3 = document.getElementById("range3").checked;
+    const r1 = document.getElementById("r1").checked;
+    const r2 = document.getElementById("r2").checked;
+    const r3 = document.getElementById("r3").checked;
 
     localStorage.setItem("rule_r1", r1);
     localStorage.setItem("rule_r2", r2);
@@ -122,13 +133,15 @@ function checkRule(temp) {
     if (trigger) {
         emailjs.send("FYP", "FYP", {
             to_email: "makmingkit144@gmail.com",
-            subject: "溫度警報！",
-            message: `目前溫度：${temp}°C 已達到您設定的範圍，請立即檢查！`
-        });
+            subject: "溫度警報觸發！",
+            message: `目前溫度：${temp}°C 已進入您設定的範圍，請立即檢查！`
+        }).then(() => {
+            console.log("自動警報 Email 已發送！");
+        }).catch(err => console.error("自動發信失敗", err));
     }
 }
 
-// 原有 updateData 函數（我只加了 checkRule）
+// 原有數據更新（只加了 checkRule）
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
