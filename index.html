@@ -4,29 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>溫濕度與火焰監控</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; }
-        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; }
-        .menu-btn { font-size:1.8rem; cursor:pointer; }
+        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; min-height:100vh; }
+        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
+        .menu-btn { font-size:1.8rem; cursor:pointer; color:#eee; }
         .title { font-size:1.4rem; margin:0; }
-        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; }
+        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
         .data-box { background:#222; border-radius:10px; padding:20px; margin:15px 0; font-size:1.4rem; }
         .temp { color:#ff9800; }
         .humid { color:#4fc3f7; }
         .flame-normal { background:#222; color:#4caf50; }
         .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
         .time { font-size:0.9rem; color:#888; margin-top:20px; }
-        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; }
-        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; }
-        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; }
+        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
+        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; transition:all 0.2s; }
+        button:hover { background:#555; }
+        .auto-mode { background:#2196f3; }
+        .all-off { background:#757575; }
+        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
+
+        .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8); }
+        .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
+        .sidebar a:hover { color:#f1f1f1; }
+        .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
+
+        .actions-modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
+        .actions-content { background:#161b22; margin:5% auto; width:90%; max-width:900px; border-radius:12px; padding:25px; }
+        .actions-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        .search-box { width:60%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
+        .add-btn { background:#238636; padding:10px 18px; font-size:0.95rem; }
+        table { width:100%; border-collapse:collapse; margin-top:15px; }
+        th, td { padding:12px; text-align:left; border-bottom:1px solid #30363d; }
+        th { background:#21262d; color:#8b949e; }
+        .action-btn { padding:6px 12px; margin-right:8px; border-radius:4px; cursor:pointer; }
+        .edit-btn { background:#444c56; }
+        .delete-btn { background:#b71c1c; }
+        .dup-btn { background:#30363d; }
+        .test-btn { background:#238636; }
+
+        /* Log 區域 */
+        .log-box {
+            background:#1a1a1a;
+            border-radius:10px;
+            padding:15px;
+            margin-top:20px;
+            max-height:180px;
+            overflow-y:auto;
+            font-size:0.9rem;
+            line-height:1.4;
+        }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div class="menu-btn" onclick="openMenu()">☰</div>
-    <h1 class="title">溫濕度與火焰監控</h1>
+    <h1 class="title">Temperature & Humidity Monitor</h1>
     <div></div>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+    <a href="#" onclick="showActions()">Actions</a>
 </div>
 
 <div class="container">
@@ -40,17 +80,94 @@
         <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
         <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
     </div>
+
+    <!-- 新增的 Log 區域 -->
+    <div class="log-box" id="logBox">
+        <strong>System Log:</strong><br>
+        <span id="logContent">等待資料更新...</span>
+    </div>
 </div>
 
-<div class="version">版本：v2.2 - 2026/02/06</div>
+<div class="version">版本：v2.3 - 2026/02/06</div>
 
-<div id="sidebar" class="sidebar" style="height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8);">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
-    <a href="#" onclick="showNotificationRules()">Notification Rules</a>
-    <a href="#" onclick="showActions()">Actions</a>
+<!-- Actions Modal -->
+<div id="actionsModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">Actions</h2>
+            <button onclick="closeActionsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <input type="text" id="searchAction" placeholder="Search..." class="search-box">
+            <button onclick="addSNMPTrap()" class="add-btn">+ ADD</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Action Type</th>
+                    <th>Action Name</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="actionList"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
+// EmailJS 初始化
+emailjs.init("DesLsbj7IJqknmZFq");
+
+// 側邊欄
+function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
+function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
+
+// Log 功能
+let logHistory = [];
+
+function addLog(message) {
+    const time = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    logHistory.unshift(`[${time}] ${message}`);
+    if (logHistory.length > 10) logHistory.pop();
+    document.getElementById('logContent').innerHTML = logHistory.join('<br>');
+}
+
+// Actions 管理（保留你原本的）
+function showActions() {
+    closeMenu();
+    document.getElementById("actionsModal").style.display = "block";
+    renderActionList();
+}
+
+function closeActionsModal() { document.getElementById("actionsModal").style.display = "none"; }
+
+let actions = JSON.parse(localStorage.getItem("actions")) || [{ id:1, type:"SNMP Trap", name:"SNMP Trap Action 1" }];
+
+function renderActionList() {
+    let html = "";
+    actions.forEach(a => {
+        html += `<tr><td>${a.type}</td><td>${a.name}</td><td style="text-align:right;"><button onclick="testAction(${a.id})">TEST</button></td></tr>`;
+    });
+    document.getElementById("actionList").innerHTML = html;
+}
+
+function addSNMPTrap() {
+    const name = prompt("Action Name:", "SNMP Trap Action " + (actions.length + 1));
+    if (name) {
+        actions.push({ id:Date.now(), type:"SNMP Trap", name:name });
+        localStorage.setItem("actions", JSON.stringify(actions));
+        renderActionList();
+    }
+}
+
+function testAction(id) {
+    const action = actions.find(a => a.id === id);
+    alert(`Testing: ${action.name}\nSNMP Trap sent! (Simulation)`);
+}
+
+// 原有數據更新 + Log
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
@@ -61,6 +178,7 @@ function updateData() {
         .then(d => {
             const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
             document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
+            addLog(`溫度更新: ${temp} °C`);
         });
 
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
@@ -68,6 +186,7 @@ function updateData() {
         .then(d => {
             const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
             document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
+            addLog(`濕度更新: ${humid} %`);
         });
 
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
@@ -76,8 +195,8 @@ function updateData() {
             const flame = d.field3;
             let text = '--';
             let cls = 'flame-normal';
-            if (flame == 0) { text = "Flame Detected! 🔥"; cls = 'flame-alert'; }
-            else if (flame == 1) { text = "No Flame ✅"; cls = 'flame-normal'; }
+            if (flame == 0) { text = "Flame Detected! 🔥"; cls = 'flame-alert'; addLog("火焰偵測到！"); }
+            else if (flame == 1) { text = "No Flame ✅"; cls = 'flame-normal'; addLog("火焰消失"); }
             document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
             document.getElementById('flameBox').className = 'data-box ' + cls;
         });
@@ -88,20 +207,18 @@ function updateData() {
 function controlLed(type, state) {
     fetch(`${espIP}/led?type=${type}&state=${state}`)
         .then(r => r.text())
-        .then(text => console.log("控制成功: " + text))
-        .catch(err => console.error("控制錯誤:", err));
+        .then(text => {
+            console.log("控制成功: " + text);
+            addLog(`燈控制: ${type} = ${state}`);
+        })
+        .catch(err => {
+            console.error("控制錯誤:", err);
+            addLog("燈控制失敗");
+        });
 }
 
 setInterval(updateData, 20000);
 updateData();
-
-// 側邊欄控制
-function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
-function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
-
-// 占位函數（先讓選單能點）
-function showActions() { alert("Actions 頁面（目前正常）"); }
-function showNotificationRules() { alert("Notification Rules 頁面（即將加入）"); }
 </script>
 </body>
 </html>
