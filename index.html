@@ -91,7 +91,7 @@
     <script>
         // 改成你自己的 ThingSpeak 資訊
         const channelID = 3252434;
-        const readAPIKey = "你的Read_API_Key";  // ← 這裡填你的 Read API Key（不是 Write）
+        const readAPIKey = "PKQNQOPCZYREXB6C";  // ← 這裡填你的 Read API Key（不是 Write）
 
         function updateData() {
             fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
