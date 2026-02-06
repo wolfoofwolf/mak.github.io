@@ -132,13 +132,16 @@
         }
 
         function controlLed(type, state) {
-            let url = `${espIP}/led?type=${type}&state=${state}`;
-            fetch(url)
+            fetch(`${espIP}/led?type=${type}&state=${state}`)
                 .then(r => r.text())
                 .then(text => {
-                    alert("控制成功: " + text);
+                    // 成功時不彈窗，只在 console 記錄（或可加小提示）
+                    console.log("控制成功: " + text);
+                    // 可選：加一個非阻塞提示
+                    // alert("控制成功: " + text);  // 如果想保留彈窗可取消註解
                 })
                 .catch(err => {
+                    // 失敗時才彈窗
                     alert("控制失敗，請確認 ESP32 是否在線 (IP: 192.168.1.140)");
                     console.error(err);
                 });
