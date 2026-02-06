@@ -6,54 +6,161 @@
     <title>溫濕度與火焰監控</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin:0; padding:0; font-family:system-ui,sans-serif; background:#111; color:#eee; min-height:100vh; }
-        .top-bar { background:#1a1a1a; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.6); }
-        .menu-btn { font-size:1.8rem; cursor:pointer; color:#eee; }
-        .title { font-size:1.4rem; margin:0; }
-        .container { max-width:500px; margin:30px auto; background:#1a1a1a; border-radius:12px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
-        .data-box { background:#222; border-radius:10px; padding:20px; margin:15px 0; font-size:1.4rem; }
-        .temp { color:#ff9800; }
-        .humid { color:#4fc3f7; }
-        .flame-normal { background:#222; color:#4caf50; }
-        .flame-alert { background:#b71c1c; color:white; font-weight:bold; }
-        .time { font-size:0.9rem; color:#888; margin-top:20px; }
-        .buttons { display:flex; justify-content:center; gap:15px; margin-top:30px; flex-wrap:wrap; }
-        button { padding:12px 24px; font-size:1rem; border:none; border-radius:8px; cursor:pointer; background:#333; color:white; transition:all 0.2s; }
-        button:hover { background:#555; }
-        .auto-mode { background:#2196f3; }
-        .all-off { background:#757575; }
-        .version { position:fixed; bottom:10px; right:20px; font-size:0.8rem; color:#555; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px; }
-
-        .sidebar { height:100%; width:0; position:fixed; z-index:10; top:0; left:0; background:#111; overflow-x:hidden; transition:0.5s; padding-top:60px; box-shadow:2px 0 10px rgba(0,0,0,0.8); }
-        .sidebar a { padding:15px 30px; font-size:1.2rem; color:#ccc; display:block; }
-        .sidebar a:hover { color:#f1f1f1; }
-        .closebtn { position:absolute; top:10px; right:25px; font-size:36px; }
-
-        .actions-modal { display:none; position:fixed; z-index:20; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); overflow-y:auto; }
-        .actions-content { background:#161b22; margin:5% auto; width:90%; max-width:900px; border-radius:12px; padding:25px; }
-        .actions-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .search-box { width:60%; padding:10px; background:#21262d; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; }
-        .add-btn { background:#238636; padding:10px 18px; font-size:0.95rem; }
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th, td { padding:12px; text-align:left; border-bottom:1px solid #30363d; }
-        th { background:#21262d; color:#8b949e; }
-        .action-btn { padding:6px 12px; margin-right:8px; border-radius:4px; cursor:pointer; }
-        .edit-btn { background:#444c56; }
-        .delete-btn { background:#b71c1c; }
-        .dup-btn { background:#30363d; }
-        .test-btn { background:#238636; }
-
-        /* Log 區域（放在 Actions 下方） */
-        .log-box {
-            background:#21262d;
-            border-radius:8px;
-            padding:15px;
-            margin-top:20px;
-            max-height:160px;
-            overflow-y:auto;
-            font-size:0.85rem;
-            line-height:1.5;
-            color:#8b949e;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #111;
+            color: #eee;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+        .menu-btn {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #eee;
+        }
+        .title {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .data-box {
+            background: #222;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4rem;
+        }
+        .temp { color: #ff9800; }
+        .humid { color: #4fc3f7; }
+        .flame-normal { background: #222; color: #4caf50; }
+        .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
+        .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            transition: all 0.2s;
+        }
+        button:hover { background: #555; }
+        button:active { transform: scale(0.98); }
+        .auto-mode { background: #2196f3; }
+        .all-off { background: #757575; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        /* Sidebar */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            background: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
+        .sidebar a {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: #ccc;
+            display: block;
+        }
+        .sidebar a:hover { color: #f1f1f1; }
+        .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 36px;
+        }
+        /* Actions Modal */
+        .actions-modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            overflow-y: auto;
+        }
+        .actions-content {
+            background: #161b22;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        .actions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            width: 60%;
+            padding: 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+        }
+        .add-btn { background: #238636; padding: 10px 18px; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #8b949e; }
+        .action-btn { padding: 6px 12px; margin-right: 8px; border-radius: 4px; cursor: pointer; }
+        .edit-btn { background: #444c56; }
+        .delete-btn { background: #b71c1c; }
+        .dup-btn { background: #30363d; }
+        .test-btn { background: #238636; }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -67,6 +174,7 @@
 
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+    <a href="#" onclick="showNotificationRules()">Notification Rules</a>
     <a href="#" onclick="showActions()">Actions</a>
 </div>
 
@@ -83,7 +191,7 @@
     </div>
 </div>
 
-<div class="version">版本：v2.2 - 2026/02/06</div>
+<div class="version">Version: v1.9 - 2026/02/06</div>
 
 <!-- Actions Modal -->
 <div id="actionsModal" class="actions-modal">
@@ -108,12 +216,6 @@
             </thead>
             <tbody id="actionList"></tbody>
         </table>
-
-        <!-- Log 區域（放在 Actions 下方） -->
-        <div class="log-box" id="actionLog">
-            <strong>Action Log:</strong><br>
-            <span id="logContent">等待操作記錄...</span>
-        </div>
     </div>
 </div>
 
@@ -124,14 +226,6 @@ emailjs.init("DesLsbj7IJqknmZFq");
 // 側邊欄
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
-
-// Log 功能
-function addLog(message) {
-    const time = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
-    const log = document.getElementById('logContent');
-    log.innerHTML = `[${time}] ${message}<br>` + log.innerHTML;
-    if (log.children.length > 8) log.removeChild(log.lastChild);
-}
 
 // Actions 管理
 function showActions() {
@@ -176,17 +270,14 @@ function addSNMPTrap() {
         actions.push({ id: Date.now(), type:"SNMP Trap", name: name });
         saveActions();
         renderActionList();
-        addLog(`新增 Action: ${name}`);
     }
 }
 
 function deleteAction(id) {
     if (confirm("Confirm delete?")) {
-        const name = actions.find(a => a.id === id).name;
         actions = actions.filter(a => a.id !== id);
         saveActions();
         renderActionList();
-        addLog(`刪除 Action: ${name}`);
     }
 }
 
@@ -197,7 +288,6 @@ function editAction(id) {
         action.name = newName;
         saveActions();
         renderActionList();
-        addLog(`修改 Action: ${newName}`);
     }
 }
 
@@ -206,16 +296,22 @@ function duplicateAction(id) {
     actions.push({ id: Date.now(), type:action.type, name: action.name + " (Copy)" });
     saveActions();
     renderActionList();
-    addLog(`複製 Action: ${action.name}`);
 }
 
 function testAction(id) {
     const action = actions.find(a => a.id === id);
     alert(`Testing Action: ${action.name}\n\nSNMP Trap sent! (Simulation)`);
-    addLog(`測試 Action: ${action.name}`);
 }
 
-// 原有數據更新與控制（保持不變）
+// 點擊其他地方關閉 menu
+document.addEventListener("click", function(e) {
+    const sidebar = document.getElementById("sidebar");
+    if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+        sidebar.style.width = "0";
+    }
+});
+
+// 原有數據更新與控制
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.140";
@@ -241,28 +337,34 @@ function updateData() {
             const flame = d.field3;
             let text = '--';
             let cls = 'flame-normal';
-            if (flame == 0) { text = "Flame Detected! 🔥"; cls = 'flame-alert'; }
-            else if (flame == 1) { text = "No Flame ✅"; cls = 'flame-normal'; }
+            if (flame == 0) {
+                text = "Flame Detected! 🔥";
+                cls = 'flame-alert';
+            } else if (flame == 1) {
+                text = "No Flame ✅";
+                cls = 'flame-normal';
+            }
             document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
             document.getElementById('flameBox').className = 'data-box ' + cls;
         });
 
-    document.getElementById('updateTime').textContent = `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+    document.getElementById('updateTime').textContent = 
+        `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 }
 
 function controlLed(type, state) {
     fetch(`${espIP}/led?type=${type}&state=${state}`)
         .then(response => {
-            if (!response.ok) throw new Error('HTTP 錯誤');
+            if (!response.ok) {
+                throw new Error('HTTP 錯誤: ' + response.status);
+            }
             return response.text();
         })
         .then(text => {
             console.log("控制成功: " + text);
-            addLog(`燈控制: ${type} = ${state}`);
         })
         .catch(err => {
             console.error("控制錯誤:", err);
-            addLog("燈控制失敗");
         });
 }
 
