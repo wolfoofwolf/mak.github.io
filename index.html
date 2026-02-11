@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temperature & Humidity Monitor</title>
+    <title>溫濕度與火焰監控系統</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             margin: 0; padding: 0;
-            font-family: system-ui, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background: #111; color: #eee;
             min-height: 100vh;
         }
@@ -54,6 +54,7 @@
         }
         .sidebar a {
             padding: 15px 30px; font-size: 1.2rem; color: #ccc; display: block;
+            cursor: pointer;
         }
         .sidebar a:hover { color: #f1f1f1; }
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
@@ -91,7 +92,6 @@
         .duplicate-btn { background: #6b7280; }
         .test-btn { background: #10b981; }
         .clear-log-btn { background: #b71c1c; margin-top: 15px; padding: 10px 20px; }
-        /* Log Modal styles */
         .log-entry {
             padding: 10px; border-bottom: 1px solid #30363d; font-size: 0.95rem;
         }
@@ -132,15 +132,15 @@
     </style>
 </head>
 <body>
-
 <div class="top-bar">
     <div class="menu-btn" onclick="openMenu()">☰</div>
-    <h1 class="title">Temperature & Humidity Monitor</h1>
+    <h1 class="title">溫濕度與火焰監控系統</h1>
     <div></div>
 </div>
 
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+    <a href="#" onclick="showNotificationsRule()">Notifications Rule</a>
     <a href="#" onclick="showActions()">Actions</a>
     <a href="#" onclick="showLog()">Log</a>
 </div>
@@ -150,7 +150,6 @@
     <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
     <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
     <div class="time" id="updateTime">Last updated: loading...</div>
-
     <div class="buttons">
         <button onclick="updateData()">Refresh Data</button>
         <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
@@ -158,7 +157,31 @@
     </div>
 </div>
 
-<div class="version">Version: v1.9 - 2026/02/06</div>
+<div class="version">Version: v1.9 - 2026/02/11</div>
+
+<!-- Notifications Rule Modal -->
+<div id="notificationsRuleModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">Notifications Rule</h2>
+            <button onclick="closeNotificationsRuleModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <p>通知規則設定（可自訂條件與通知方式）</p>
+        <div class="input-group">
+            <label>溫度超過 (°C)</label>
+            <input type="number" id="tempThreshold" placeholder="例如 30">
+        </div>
+        <div class="input-group">
+            <label>濕度低於 (%)</label>
+            <input type="number" id="humidThreshold" placeholder="例如 40">
+        </div>
+        <div class="input-group">
+            <label>通知 Email</label>
+            <input type="email" id="notifyEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px;">儲存規則</button>
+    </div>
+</div>
 
 <!-- Actions Modal -->
 <div id="actionsModal" class="actions-modal">
@@ -221,30 +244,29 @@ emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log system
 let logEntries = JSON.parse(localStorage.getItem("systemLog")) || [];
-
 function addLog(action, details = "") {
     const entry = {
-        time: new Date().toLocaleString('en-US'),
+        time: new Date().toLocaleString('zh-TW'),
         action: action,
         details: details
     };
     logEntries.unshift(entry);
     localStorage.setItem("systemLog", JSON.stringify(logEntries));
+    renderLogList();
 }
-
 function clearLog() {
-    if (confirm("Are you sure you want to clear all logs?")) {
+    if (confirm("確定要清除所有日誌嗎？")) {
         logEntries = [];
         localStorage.removeItem("systemLog");
         renderLogList();
+        addLog("系統日誌已全部清除");
     }
 }
-
 function renderLogList() {
     const container = document.getElementById("logList");
     let html = "";
     if (logEntries.length === 0) {
-        html = "<p style='color:#888; text-align:center;'>No logs yet</p>";
+        html = "<p style='color:#888; text-align:center;'>目前沒有日誌</p>";
     } else {
         logEntries.forEach(entry => {
             html += `
@@ -262,13 +284,38 @@ function renderLogList() {
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
+// Notifications Rule Modal
+function showNotificationsRule() {
+    closeMenu();
+    document.getElementById("notificationsRuleModal").style.display = "block";
+    addLog("開啟 Notifications Rule 面板");
+}
+function closeNotificationsRuleModal() {
+    document.getElementById("notificationsRuleModal").style.display = "none";
+}
+function saveNotificationsRule() {
+    alert("通知規則已儲存！（可擴充成實際功能）");
+    addLog("儲存 Notifications Rule");
+    closeNotificationsRuleModal();
+}
+
+// Actions Modal
+function showActions() {
+    closeMenu();
+    document.getElementById("actionsModal").style.display = "block";
+    renderActionList();
+    addLog("開啟 Actions 面板");
+}
+function closeActionsModal() {
+    document.getElementById("actionsModal").style.display = "none";
+}
+
 // Log Modal
 function showLog() {
     closeMenu();
     renderLogList();
     document.getElementById("logModal").style.display = "block";
 }
-
 function closeLogModal() {
     document.getElementById("logModal").style.display = "none";
 }
@@ -281,46 +328,31 @@ function openEditEmailModal(id) {
     document.getElementById("fromEmail").value = action.fromEmail || "";
     document.getElementById("toEmail").value = action.toEmail || "";
 }
-
 function closeEditEmailModal() {
     document.getElementById("editEmailModal").style.display = "none";
 }
-
 function saveActionEmail() {
     const id = window.currentEditId;
     const action = actions.find(a => a.id === id);
     const from = document.getElementById("fromEmail").value;
     const to = document.getElementById("toEmail").value;
-    
+   
     action.fromEmail = from;
     action.toEmail = to;
     saveActions();
-    
-    addLog("Updated Email Settings", `Action: ${action.name} | From: ${from} | To: ${to}`);
-    alert("Email settings saved");
+   
+    addLog("更新 Email 設定", `Action: ${action.name} | From: ${from} | To: ${to}`);
+    alert("Email 設定已儲存");
     closeEditEmailModal();
 }
 
 // Actions management
-function showActions() {
-    closeMenu();
-    document.getElementById("actionsModal").style.display = "block";
-    renderActionList();
-    addLog("Opened Actions Panel");
-}
-
-function closeActionsModal() {
-    document.getElementById("actionsModal").style.display = "none";
-}
-
 let actions = JSON.parse(localStorage.getItem("actions")) || [
     { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
 ];
-
 function saveActions() {
     localStorage.setItem("actions", JSON.stringify(actions));
 }
-
 function renderActionList() {
     let html = "";
     actions.forEach(a => {
@@ -338,87 +370,79 @@ function renderActionList() {
     });
     document.getElementById("actionList").innerHTML = html;
 }
-
 function addSNMPTrap() {
-    const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
+    const name = prompt("輸入 SNMP Trap Action 名稱:", "SNMP Trap Action " + (actions.length + 1));
     if (name) {
         const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
         actions.push(newAction);
         saveActions();
         renderActionList();
-        addLog("Added Action", name);
+        addLog("新增 Action", name);
     }
 }
-
 function deleteAction(id) {
-    if (confirm("Confirm delete?")) {
+    if (confirm("確定要刪除嗎？")) {
         const action = actions.find(a => a.id === id);
         actions = actions.filter(a => a.id !== id);
         saveActions();
         renderActionList();
-        addLog("Deleted Action", action ? action.name : "Unknown");
+        addLog("刪除 Action", action ? action.name : "未知");
     }
 }
-
 function duplicateAction(id) {
     const action = actions.find(a => a.id === id);
     if (action) {
-        actions.push({ 
-            id: Date.now(), 
-            type: action.type, 
-            name: action.name + " (Copy)", 
-            fromEmail: action.fromEmail, 
-            toEmail: action.toEmail 
+        actions.push({
+            id: Date.now(),
+            type: action.type,
+            name: action.name + " (複製)",
+            fromEmail: action.fromEmail,
+            toEmail: action.toEmail
         });
         saveActions();
         renderActionList();
-        addLog("Duplicated Action", action.name);
+        addLog("複製 Action", action.name);
     }
 }
-
 function testAction(id) {
     const action = actions.find(a => a.id === id);
-    const toEmail = action.toEmail || prompt("Enter recipient Email:", "makmingkit144@gmail.com");
+    const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
     if (!toEmail) return;
-
-    addLog("Test Action - Preparing to send Email", `Action: ${action.name} | Recipient: ${toEmail}`);
-
+    addLog("測試 Action - 準備發送 Email", `Action: ${action.name} | 收件人: ${toEmail}`);
     emailjs.send("FYP", "FYP", {
         to_email: toEmail,
-        subject: "SNMP Trap Alert: " + action.name + " (Test)",
+        subject: "SNMP Trap Alert: " + action.name + " (測試)",
         action_name: action.name,
         action_type: action.type,
-        time: new Date().toLocaleString('en-US'),
-        message: "This is a test notification.\n\n" +
-                 "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
-                 "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
-                 "Flame Status: " + document.getElementById('flameDisplay').textContent
+        time: new Date().toLocaleString('zh-TW'),
+        message: "這是一封測試通知。\n\n" +
+                 "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+                 "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+                 "火焰狀態: " + document.getElementById('flameDisplay').textContent
     }).then(() => {
-        addLog("Email Sent Successfully", `Test Action: ${action.name} → ${toEmail}`);
-        alert("Test email sent to " + toEmail);
+        addLog("Email 發送成功", `測試 Action: ${action.name} → ${toEmail}`);
+        alert("測試 Email 已發送到 " + toEmail);
     }).catch((err) => {
-        addLog("Email Send Failed", `Error: ${err.text || err}`);
-        alert("Send failed: " + (err.text || err));
+        addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
+        alert("發送失敗: " + (err.text || err));
     });
 }
 
-// Other logged actions
+// 其他功能
 function updateData() {
-    addLog("Manual Data Refresh");
+    addLog("手動刷新資料");
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
             const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
             document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
         });
-
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
             const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
             document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
         });
-
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
@@ -435,36 +459,32 @@ function updateData() {
             document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
             document.getElementById('flameBox').className = 'data-box ' + cls;
         });
-
-    document.getElementById('updateTime').textContent = 
-        `Last updated: ${new Date().toLocaleString('en-US')}`;
+    document.getElementById('updateTime').textContent =
+        `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 }
-
 function controlLed(type, state) {
-    addLog("LED Control", `type=${type}, state=${state}`);
+    addLog("LED 控制", `type=${type}, state=${state}`);
     fetch(`${espIP}/led?type=${type}&state=${state}`)
         .then(response => {
             if (!response.ok) throw new Error('HTTP ' + response.status);
             return response.text();
         })
         .then(text => {
-            console.log("LED control success:", text);
+            console.log("LED 控制成功:", text);
         })
         .catch(err => {
-            console.error("LED control failed:", err);
+            console.error("LED 控制失敗:", err);
         });
 }
 
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.157";
-
+const espIP = "http://192.168.1.157";  // ← 改成你主 ESP32 的 IP
 setInterval(() => {
-    addLog("Auto Data Refresh (every 20s)");
+    addLog("自動刷新資料 (每 20 秒)");
     updateData();
 }, 20000);
-
 updateData();
 </script>
 </body>
