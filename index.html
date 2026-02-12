@@ -68,8 +68,44 @@
             border-radius: 12px; padding: 25px;
         }
         .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #d1d5db; font-size: 0.95rem; }
+        .search-box { width: 60%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
+        .add-btn { background: #238636; padding: 10px 18px; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #8b949e; }
+        .action-btn {
+            padding: 6px 14px;
+            margin: 0 4px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+        .action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .edit-btn { background: #3b82f6; }
+        .delete-btn { background: #ef4444; }
+        .duplicate-btn { background: #6b7280; }
+        .test-btn { background: #10b981; }
+        .clear-log-btn { background: #b71c1c; margin-top: 15px; padding: 10px 20px; }
+        .log-entry {
+            padding: 10px; border-bottom: 1px solid #30363d; font-size: 0.95rem;
+        }
+        .log-time { color: #888; font-size: 0.85rem; }
+        .log-action { font-weight: bold; color: #4fc3f7; }
+        .log-detail { color: #ccc; }
+        /* 美化輸入框 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #d1d5db;
+            font-size: 0.95rem;
+        }
         .input-group input {
             width: 100%;
             padding: 12px 16px;
@@ -78,13 +114,16 @@
             border-radius: 8px;
             color: #e5e7eb;
             font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
         }
         .input-group input:focus {
             outline: none;
             border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96,165,250,0.3);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
             background: #1e293b;
         }
+        .input-group input::placeholder { color: #6b7280; }
     </style>
 </head>
 <body>
@@ -113,7 +152,7 @@
     </div>
 </div>
 
-<div class="version">Version: v2.1 - 2026/02/12</div>
+<div class="version">Version: v2.0 - 2026/02/11</div>
 
 <!-- Notifications Rule Modal -->
 <div id="notificationsRuleModal" class="actions-modal">
@@ -300,17 +339,20 @@ function sendNotificationEmail(subject, message) {
     to_email: notificationsRule.notifyEmail,
     subject: subject,
     message: message + "\n\n" +
+             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "火焰狀態: " + document.getElementById('flameDisplay').textContent + "\n" +
              "時間: " + new Date().toLocaleString('zh-TW')
   }).then(() => {
     addLog("自動通知發送成功", subject);
-    alert("通知 Email 已發送至 " + notificationsRule.notifyEmail);
+    alert("通知 Email 已發送到 " + notificationsRule.notifyEmail);
   }).catch(err => {
     addLog("自動通知發送失敗", err.text || err);
     alert("發送失敗: " + (err.text || err));
   });
 }
 
-// Actions Modal
+// Actions Modal 與原有功能（完全保留你原本的）
 function showActions() {
   closeMenu();
   document.getElementById("actionsModal").style.display = "block";
@@ -491,7 +533,7 @@ function controlLed(type, state) {
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.157";  // ← 改成你主 ESP32 的 IP
+const espIP = "http://192.168.1.144";  // ← 改成你主 ESP32 的 IP
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
   updateData();
