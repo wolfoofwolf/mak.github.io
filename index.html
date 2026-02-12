@@ -318,8 +318,21 @@ function renderLogList() {
 }
 
 // Sidebar 控制
-function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
-function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
+function openMenu() {
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+        sidebar.style.width = "280px";
+    } else {
+        console.error("找不到 sidebar 元素");
+    }
+}
+
+function closeMenu() {
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+        sidebar.style.width = "0";
+    }
+}
 
 // Notifications Rule Modal
 let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || {
