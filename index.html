@@ -44,6 +44,11 @@
             color: #ff9800;
             font-size: 1.3rem;
         }
+        .sidebar-chart iframe {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
         .data-box {
             background: #222; border-radius: 10px; padding: 20px; margin: 15px 0;
             font-size: 1.4rem;
@@ -166,15 +171,24 @@
         </div>
     </div>
 
-    <!-- 右邊 ThingSpeak Field 1 Chart（暗黑優化版） -->
+    <!-- 右邊 ThingSpeak 圖表區塊（溫度 + 濕度） -->
     <div class="sidebar-chart">
         <h3>Field 1 Chart (DHT11 溫度)</h3>
         <iframe 
             width="100%" 
             height="340" 
             style="border: none; background: #111111;" 
-            src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&title=DHT11%20溫度&type=line&xaxis=Date&yaxis=Temperature%20(°C)&yaxismax=40&yaxismin=10&showlegend=false&showxaxislabel=true&showyaxislabel=true&linewidth=2&gridcolor=%23333333&gridlinestyle=solid&bgcolor=%23111111">
+            src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&title=DHT11%20溫度&type=line&xaxis=Date&yaxis=Temperature%20(°C)&yaxismax=40&yaxismin=10&showlegend=false&showxaxislabel=true&showyaxislabel=true">
         </iframe>
+
+        <h3 style="margin-top: 30px;">Field 2 Chart (DHT11 濕度)</h3>
+        <iframe 
+            width="100%" 
+            height="340" 
+            style="border: none; background: #111111;" 
+            src="https://thingspeak.com/channels/3252434/charts/2?bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&title=DHT11%20濕度&type=line&xaxis=Date&yaxis=Humidity%20(%)&yaxismax=100&yaxismin=0&showlegend=false&showxaxislabel=true&showyaxislabel=true">
+        </iframe>
+
         <p style="text-align: center; margin-top: 10px; color: #888; font-size: 0.9rem;">
             資料來自 ThingSpeak
         </p>
@@ -262,7 +276,7 @@
 </div>
 
 <script>
-// EmailJS 初始化
+// EmailJS 初始化（你的 User ID）
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log 系統
