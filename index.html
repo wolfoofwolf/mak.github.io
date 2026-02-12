@@ -152,7 +152,7 @@
     </div>
 </div>
 
-<div class="version">Version: v2.0 - 2026/02/11</div>
+<div class="version">Version: v2.1 - 2026/02/12</div>
 
 <!-- Notifications Rule Modal -->
 <div id="notificationsRuleModal" class="actions-modal">
@@ -172,6 +172,10 @@
         <div class="input-group">
             <label>通知 Email</label>
             <input type="email" id="notifyEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>冷卻時間（秒）</label>
+            <input type="number" id="cooldownSeconds" placeholder="例如 300（5分鐘）" value="300" min="60">
         </div>
         <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存規則</button>
     </div>
@@ -282,8 +286,11 @@ function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || {
   tempThreshold: null,
   humidThreshold: null,
-  notifyEmail: ""
+  notifyEmail: "",
+  cooldownSeconds: 300  // 預設 5 分鐘 CD
 };
+
+let lastNotificationTime = 0;  // 上次發送通知的時間戳
 
 function showNotificationsRule() {
   closeMenu();
@@ -292,6 +299,7 @@ function showNotificationsRule() {
   document.getElementById("tempThreshold").value = notificationsRule.tempThreshold || "";
   document.getElementById("humidThreshold").value = notificationsRule.humidThreshold || "";
   document.getElementById("notifyEmail").value = notificationsRule.notifyEmail || "";
+  document.getElementById("cooldownSeconds").value = notificationsRule.cooldownSeconds || 300;
   addLog("開啟 Notifications Rule 面板");
 }
 
@@ -303,16 +311,18 @@ function saveNotificationsRule() {
   const temp = document.getElementById("tempThreshold").value;
   const humid = document.getElementById("humidThreshold").value;
   const email = document.getElementById("notifyEmail").value;
+  const cooldown = document.getElementById("cooldownSeconds").value;
 
   notificationsRule = {
     tempThreshold: temp ? Number(temp) : null,
     humidThreshold: humid ? Number(humid) : null,
-    notifyEmail: email
+    notifyEmail: email,
+    cooldownSeconds: cooldown ? Number(cooldown) : 300
   };
 
   localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
-  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}`);
-  alert("規則已儲存！網頁會自動監控並發送通知");
+  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
+  alert("規則已儲存！網頁會自動監控並發送通知（CD 為 " + cooldown + " 秒）");
   closeNotificationsRuleModal();
 }
 
@@ -320,17 +330,30 @@ function saveNotificationsRule() {
 setInterval(() => {
   if (notificationsRule.notifyEmail === "") return;
 
+  const now = Date.now();
+  if (now - lastNotificationTime < notificationsRule.cooldownSeconds * 1000) return;  // CD 還沒過
+
   const tempText = document.getElementById('tempDisplay').textContent;
   const humidText = document.getElementById('humidDisplay').textContent;
   const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 0);
   const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 0);
 
+  let triggered = false;
+  let alertMsg = "";
+
   if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
-    sendNotificationEmail("溫度警報！", `目前溫度: ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C`);
+    alertMsg += `溫度警報！目前 ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C\n`;
+    triggered = true;
   }
 
   if (notificationsRule.humidThreshold && humid < notificationsRule.humidThreshold) {
-    sendNotificationEmail("濕度警報！", `目前濕度: ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %`);
+    alertMsg += `濕度警報！目前 ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %\n`;
+    triggered = true;
+  }
+
+  if (triggered) {
+    sendNotificationEmail("環境監控警報", alertMsg);
+    lastNotificationTime = now;
   }
 }, 20000);
 
@@ -345,10 +368,10 @@ function sendNotificationEmail(subject, message) {
              "時間: " + new Date().toLocaleString('zh-TW')
   }).then(() => {
     addLog("自動通知發送成功", subject);
-    alert("通知 Email 已發送到 " + notificationsRule.notifyEmail);
+    console.log("自動通知發送成功");
   }).catch(err => {
     addLog("自動通知發送失敗", err.text || err);
-    alert("發送失敗: " + (err.text || err));
+    console.error("自動通知發送失敗:", err);
   });
 }
 
@@ -533,7 +556,7 @@ function controlLed(type, state) {
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.144";  // ← 改成你主 ESP32 的 IP
+const espIP = "http://192.168.1.157";  // ← 改成你主 ESP32 的 IP
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
   updateData();
