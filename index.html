@@ -31,8 +31,8 @@
             background: #1a1a1a; border-radius: 12px; padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
-        .sidebar-data {
-            width: 300px;
+        .sidebar-chart {
+            width: 400px;
             background: #1a1a1a; border-radius: 12px; padding: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
@@ -136,22 +136,6 @@
             background: #1e293b;
         }
         .input-group input::placeholder { color: #6b7280; }
-        /* 右邊最新資料方塊 */
-        .sidebar-data {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            width: 300px;
-        }
-        .sidebar-data h3 {
-            margin-top: 0;
-            color: #4fc3f7;
-        }
-        .sidebar-data p {
-            margin: 10px 0;
-            font-size: 1.1rem;
-        }
     </style>
 </head>
 <body>
@@ -174,13 +158,11 @@
         </div>
     </div>
 
-    <!-- 右邊最新資料方塊 -->
-    <div class="sidebar-data">
-        <h3>最新資料時間</h3>
-        <p id="latestDate">Date: loading...</p>
-        <p id="latestTemp">Temperature: -- °C</p>
-        <p id="latestHumid">Humidity: -- %</p>
-        <p id="latestFlame">Flame: --</p>
+    <!-- 右邊 ThingSpeak Field 1 Chart -->
+    <div class="sidebar-chart">
+        <h3>Field 1 Chart (DHT11 溫度)</h3>
+        <iframe width="100%" height="300" style="border: 1px solid #ccc;" src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%231a1a1a&color=%23ff9800&dynamic=true&results=60&timescale=10&title=DHT%20T&type=line&xaxis=Date&yaxis=Temperature%20(°C)"></iframe>
+        <p style="text-align: center; margin-top: 10px; color: #888;">資料來自 ThingSpeak</p>
     </div>
 </div>
 
@@ -519,33 +501,31 @@ function updateData() {
     .then(d => {
       const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
       document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
-      document.getElementById('latestTemp').textContent = `Temperature: ${temp} °C`;
     });
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
     .then(r => r.json())
     .then(d => {
       const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
       document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
-      document.getElementById('latestHumid').textContent = `Humidity: ${humid} %`;
     });
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
     .then(r => r.json())
     .then(d => {
       const flame = d.field3;
       let text = '--';
-      if (flame == 0) text = "Flame Detected! 🔥";
-      else if (flame == 1) text = "No Flame ✅";
+      let cls = 'flame-normal';
+      if (flame == 0) {
+        text = "Flame Detected! 🔥";
+        cls = 'flame-alert';
+      } else if (flame == 1) {
+        text = "No Flame ✅";
+        cls = 'flame-normal';
+      }
       document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
-      document.getElementById('latestFlame').textContent = `Flame: ${text}`;
+      document.getElementById('flameBox').className = 'data-box ' + cls;
     });
-  // 顯示最新 Date（從任意一筆資料取 created_at）
-  fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readAPIKey}`)
-    .then(r => r.json())
-    .then(d => {
-      const date = new Date(d.created_at).toLocaleString('zh-TW');
-      document.getElementById('latestDate').textContent = `Date: ${date}`;
-      document.getElementById('updateTime').textContent = `Last updated: ${date}`;
-    });
+  document.getElementById('updateTime').textContent =
+    `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 }
 function controlLed(type, state) {
   addLog("LED 控制", `type=${type}, state=${state}`);
