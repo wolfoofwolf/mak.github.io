@@ -6,35 +6,124 @@
     <title>溫濕度與火焰監控系統</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body { margin: 0; padding: 0; font-family: system-ui, sans-serif; background: #111; color: #eee; min-height: 100vh; }
-        .top-bar { background: #1a1a1a; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+        body {
+            margin: 0; padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #111; color: #eee;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #1a1a1a; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
         .menu-btn { font-size: 1.8rem; cursor: pointer; color: #eee; }
         .title { font-size: 1.4rem; margin: 0; }
-        .container { max-width: 500px; margin: 30px auto; background: #1a1a1a; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
-        .data-box { background: #222; border-radius: 10px; padding: 20px; margin: 15px 0; font-size: 1.4rem; }
+        .container {
+            max-width: 500px; margin: 30px auto;
+            background: #1a1a1a; border-radius: 12px; padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .data-box {
+            background: #222; border-radius: 10px; padding: 20px; margin: 15px 0;
+            font-size: 1.4rem;
+        }
         .temp { color: #ff9800; }
         .humid { color: #4fc3f7; }
         .flame-normal { background: #222; color: #4caf50; }
         .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
         .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
         .buttons { display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
-        button { padding: 12px 24px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background: #333; color: white; transition: all 0.2s; }
+        button {
+            padding: 12px 24px; font-size: 1rem; border: none; border-radius: 8px;
+            cursor: pointer; background: #333; color: white; transition: all 0.2s;
+        }
         button:hover { background: #555; }
         button:active { transform: scale(0.98); }
         .auto-mode { background: #2196f3; }
         .all-off { background: #757575; }
-        .version { position: fixed; bottom: 10px; right: 20px; font-size: 0.8rem; color: #555; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
-        .sidebar { height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0; background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.8); }
-        .sidebar a { padding: 15px 30px; font-size: 1.2rem; color: #ccc; display: block; cursor: pointer; }
+        .version {
+            position: fixed; bottom: 10px; right: 20px; font-size: 0.8rem;
+            color: #555; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px;
+        }
+        /* Sidebar */
+        .sidebar {
+            height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0;
+            background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
+        .sidebar a {
+            padding: 15px 30px; font-size: 1.2rem; color: #ccc; display: block;
+            cursor: pointer;
+        }
         .sidebar a:hover { color: #f1f1f1; }
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
-        .actions-modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
-        .actions-content { background: #161b22; margin: 5% auto; width: 90%; max-width: 900px; border-radius: 12px; padding: 25px; }
+        /* Modal */
+        .actions-modal {
+            display: none; position: fixed; z-index: 20; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto;
+        }
+        .actions-content {
+            background: #161b22; margin: 5% auto; width: 90%; max-width: 900px;
+            border-radius: 12px; padding: 25px;
+        }
         .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #d1d5db; font-size: 0.95rem; }
-        .input-group input { width: 100%; padding: 12px 16px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e5e7eb; font-size: 1rem; }
-        .input-group input:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,0.3); background: #1e293b; }
+        .search-box { width: 60%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
+        .add-btn { background: #238636; padding: 10px 18px; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #8b949e; }
+        .action-btn {
+            padding: 6px 14px;
+            margin: 0 4px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+        .action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .edit-btn { background: #3b82f6; }
+        .delete-btn { background: #ef4444; }
+        .duplicate-btn { background: #6b7280; }
+        .test-btn { background: #10b981; }
+        .clear-log-btn { background: #b71c1c; margin-top: 15px; padding: 10px 20px; }
+        .log-entry {
+            padding: 10px; border-bottom: 1px solid #30363d; font-size: 0.95rem;
+        }
+        .log-time { color: #888; font-size: 0.85rem; }
+        .log-action { font-weight: bold; color: #4fc3f7; }
+        .log-detail { color: #ccc; }
+        /* 美化輸入框 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #d1d5db;
+            font-size: 0.95rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #e5e7eb;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+            background: #1e293b;
+        }
+        .input-group input::placeholder { color: #6b7280; }
     </style>
 </head>
 <body>
@@ -95,6 +184,10 @@
             <h2 style="margin:0;">Actions</h2>
             <button onclick="closeActionsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
+        <div style="margin-bottom:15px;">
+            <input type="text" id="searchAction" placeholder="Search..." class="search-box">
+            <button onclick="addSNMPTrap()" class="add-btn">+ ADD</button>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -120,51 +213,91 @@
     </div>
 </div>
 
+<!-- Edit Email Modal -->
+<div id="editEmailModal" class="actions-modal">
+    <div class="actions-content">
+        <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
+        <div class="input-group">
+            <label>From Email (Sender)</label>
+            <input type="email" id="fromEmail" placeholder="yourname@example.com">
+        </div>
+        <div class="input-group">
+            <label>To Email (Receiver)</label>
+            <input type="email" id="toEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <button onclick="saveActionEmail()" style="flex: 1; background:#238636; padding:12px; border-radius:6px;">Save</button>
+            <button onclick="closeEditEmailModal()" style="flex: 1; background:#f44336; padding:12px; border-radius:6px;">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script>
-// EmailJS 初始化
+// EmailJS 初始化（你的 User ID）
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log 系統
 let logEntries = JSON.parse(localStorage.getItem("systemLog")) || [];
 function addLog(action, details = "") {
-    const entry = { time: new Date().toLocaleString('zh-TW'), action, details };
+    const entry = {
+        time: new Date().toLocaleString('zh-TW'),
+        action: action,
+        details: details
+    };
     logEntries.unshift(entry);
     localStorage.setItem("systemLog", JSON.stringify(logEntries));
     renderLogList();
 }
 function clearLog() {
-    if (confirm("確定清除所有日誌？")) {
+    if (confirm("確定要清除所有日誌嗎？")) {
         logEntries = [];
         localStorage.removeItem("systemLog");
         renderLogList();
+        addLog("系統日誌已全部清除");
     }
 }
 function renderLogList() {
     const container = document.getElementById("logList");
-    container.innerHTML = logEntries.length === 0 ? "<p style='color:#888; text-align:center;'>目前沒有日誌</p>" : logEntries.map(e => `
-        <div class="log-entry">
-            <div class="log-time">${e.time}</div>
-            <div class="log-action">${e.action}</div>
-            ${e.details ? `<div class="log-detail">${e.details}</div>` : ""}
-        </div>`).join('');
+    let html = "";
+    if (logEntries.length === 0) {
+        html = "<p style='color:#888; text-align:center;'>目前沒有日誌</p>";
+    } else {
+        logEntries.forEach(entry => {
+            html += `
+                <div class="log-entry">
+                    <div class="log-time">${entry.time}</div>
+                    <div class="log-action">${entry.action}</div>
+                    ${entry.details ? `<div class="log-detail">${entry.details}</div>` : ""}
+                </div>`;
+        });
+    }
+    container.innerHTML = html;
 }
 
 // Sidebar 控制
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Notifications Rule
-let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || { tempThreshold: null, humidThreshold: null, notifyEmail: "" };
+// Notifications Rule Modal
+let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || {
+  tempThreshold: null,
+  humidThreshold: null,
+  notifyEmail: ""
+};
 
 function showNotificationsRule() {
   closeMenu();
   document.getElementById("notificationsRuleModal").style.display = "block";
+  
   document.getElementById("tempThreshold").value = notificationsRule.tempThreshold || "";
   document.getElementById("humidThreshold").value = notificationsRule.humidThreshold || "";
   document.getElementById("notifyEmail").value = notificationsRule.notifyEmail || "";
+  addLog("開啟 Notifications Rule 面板");
 }
 
-function closeNotificationsRuleModal() { document.getElementById("notificationsRuleModal").style.display = "none"; }
+function closeNotificationsRuleModal() {
+  document.getElementById("notificationsRuleModal").style.display = "none";
+}
 
 function saveNotificationsRule() {
   const temp = document.getElementById("tempThreshold").value;
@@ -178,41 +311,198 @@ function saveNotificationsRule() {
   };
 
   localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
-  alert("規則已儲存！網頁會自動監控並發送通知");
+  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}`);
+  alert("規則已儲存！後端 ESP32 會自動監控並發送通知");
   closeNotificationsRuleModal();
 }
 
-// Auto 檢查並發 Email（每 20 秒）
-setInterval(() => {
-  if (notificationsRule.notifyEmail === "") return;
+// Actions Modal
+function showActions() {
+  closeMenu();
+  document.getElementById("actionsModal").style.display = "block";
+  renderActionList();
+  addLog("開啟 Actions 面板");
+}
+function closeActionsModal() {
+  document.getElementById("actionsModal").style.display = "none";
+}
 
-  const tempText = document.getElementById('tempDisplay').textContent;
-  const humidText = document.getElementById('humidDisplay').textContent;
-  const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 0);
-  const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 0);
+// Log Modal
+function showLog() {
+  closeMenu();
+  renderLogList();
+  document.getElementById("logModal").style.display = "block";
+}
+function closeLogModal() {
+  document.getElementById("logModal").style.display = "none";
+}
 
-  if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
-    sendNotificationEmail("溫度警報！", `目前溫度: ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C`);
+// Email settings modal
+function openEditEmailModal(id) {
+  document.getElementById("editEmailModal").style.display = "block";
+  window.currentEditId = id;
+  const action = actions.find(a => a.id === id);
+  document.getElementById("fromEmail").value = action.fromEmail || "";
+  document.getElementById("toEmail").value = action.toEmail || "";
+}
+function closeEditEmailModal() {
+  document.getElementById("editEmailModal").style.display = "none";
+}
+function saveActionEmail() {
+  const id = window.currentEditId;
+  const action = actions.find(a => a.id === id);
+  const from = document.getElementById("fromEmail").value;
+  const to = document.getElementById("toEmail").value;
+ 
+  action.fromEmail = from;
+  action.toEmail = to;
+  saveActions();
+ 
+  addLog("更新 Email 設定", `Action: ${action.name} | From: ${from} | To: ${to}`);
+  alert("Email 設定已儲存");
+  closeEditEmailModal();
+}
+
+// Actions management
+let actions = JSON.parse(localStorage.getItem("actions")) || [
+  { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
+];
+function saveActions() {
+  localStorage.setItem("actions", JSON.stringify(actions));
+}
+function renderActionList() {
+  let html = "";
+  actions.forEach(a => {
+    html += `
+      <tr class="action-row">
+        <td>${a.type}</td>
+        <td>${a.name}</td>
+        <td style="text-align:right;">
+          <button class="action-btn edit-btn" onclick="openEditEmailModal(${a.id})">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteAction(${a.id})">Delete</button>
+          <button class="action-btn duplicate-btn" onclick="duplicateAction(${a.id})">Duplicate</button>
+          <button class="action-btn test-btn" onclick="testAction(${a.id})">Test</button>
+        </td>
+      </tr>`;
+  });
+  document.getElementById("actionList").innerHTML = html;
+}
+function addSNMPTrap() {
+  const name = prompt("輸入 SNMP Trap Action 名稱:", "SNMP Trap Action " + (actions.length + 1));
+  if (name) {
+    const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
+    actions.push(newAction);
+    saveActions();
+    renderActionList();
+    addLog("新增 Action", name);
   }
-
-  if (notificationsRule.humidThreshold && humid < notificationsRule.humidThreshold) {
-    sendNotificationEmail("濕度警報！", `目前濕度: ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %`);
+}
+function deleteAction(id) {
+  if (confirm("確定要刪除嗎？")) {
+    const action = actions.find(a => a.id === id);
+    actions = actions.filter(a => a.id !== id);
+    saveActions();
+    renderActionList();
+    addLog("刪除 Action", action ? action.name : "未知");
   }
-}, 20000);
-
-function sendNotificationEmail(subject, message) {
+}
+function duplicateAction(id) {
+  const action = actions.find(a => a.id === id);
+  if (action) {
+    actions.push({
+      id: Date.now(),
+      type: action.type,
+      name: action.name + " (複製)",
+      fromEmail: action.fromEmail,
+      toEmail: action.toEmail
+    });
+    saveActions();
+    renderActionList();
+    addLog("複製 Action", action.name);
+  }
+}
+function testAction(id) {
+  const action = actions.find(a => a.id === id);
+  const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
+  if (!toEmail) return;
+  addLog("測試 Action - 準備發送 Email", `Action: ${action.name} | 收件人: ${toEmail}`);
   emailjs.send("FYP", "FYP", {
-    to_email: notificationsRule.notifyEmail,
-    subject: subject,
-    message: message + "\n\n" + "時間: " + new Date().toLocaleString('zh-TW')
+    to_email: toEmail,
+    subject: "SNMP Trap Alert: " + action.name + " (測試)",
+    action_name: action.name,
+    action_type: action.type,
+    time: new Date().toLocaleString('zh-TW'),
+    message: "這是一封測試通知。\n\n" +
+             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "火焰狀態: " + document.getElementById('flameDisplay').textContent
   }).then(() => {
-    console.log("自動通知發送成功");
-  }).catch(err => {
-    console.error("自動通知發送失敗:", err);
+    addLog("Email 發送成功", `測試 Action: ${action.name} → ${toEmail}`);
+    alert("測試 Email 已發送到 " + toEmail);
+  }).catch((err) => {
+    addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
+    alert("發送失敗: " + (err.text || err));
   });
 }
 
-// 其他原有功能（updateData, controlLed, Actions, Log 等）請保留你原本的 script 內容
+// 其他功能
+function updateData() {
+  addLog("手動刷新資料");
+  fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
+      document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
+    });
+  fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
+      document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
+    });
+  fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const flame = d.field3;
+      let text = '--';
+      let cls = 'flame-normal';
+      if (flame == 0) {
+        text = "Flame Detected! 🔥";
+        cls = 'flame-alert';
+      } else if (flame == 1) {
+        text = "No Flame ✅";
+        cls = 'flame-normal';
+      }
+      document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
+      document.getElementById('flameBox').className = 'data-box ' + cls;
+    });
+  document.getElementById('updateTime').textContent =
+    `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+}
+function controlLed(type, state) {
+  addLog("LED 控制", `type=${type}, state=${state}`);
+  fetch(`${espIP}/led?type=${type}&state=${state}`)
+    .then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.text();
+    })
+    .then(text => {
+      console.log("LED 控制成功:", text);
+    })
+    .catch(err => {
+      console.error("LED 控制失敗:", err);
+    });
+}
+
+// Auto update
+const channelID = 3252434;
+const readAPIKey = "PKQNQOPCZYREXB6C";
+const espIP = "http://192.168.1.157";  // ← 改成你主 ESP32 的 IP
+setInterval(() => {
+  addLog("自動刷新資料 (每 20 秒)");
+  updateData();
+}, 20000);
+updateData();
 </script>
 </body>
 </html>
