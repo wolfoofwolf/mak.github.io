@@ -317,13 +317,13 @@ function renderLogList() {
     container.innerHTML = html;
 }
 
-// Sidebar 控制
+// Sidebar 控制（加強防錯）
 function openMenu() {
     const sidebar = document.getElementById("sidebar");
     if (sidebar) {
         sidebar.style.width = "280px";
     } else {
-        console.error("找不到 sidebar 元素");
+        console.error("找不到 id='sidebar' 的元素，請檢查 HTML");
     }
 }
 
@@ -343,16 +343,14 @@ let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) ||
 
 function showNotificationsRule() {
   closeMenu();
-  document.getElementById("notificationsRuleModal").style.display = "block";
-  
-  document.getElementById("tempThreshold").value = notificationsRule.tempThreshold || "";
-  document.getElementById("humidThreshold").value = notificationsRule.humidThreshold || "";
-  document.getElementById("notifyEmail").value = notificationsRule.notifyEmail || "";
+  const modal = document.getElementById("notificationsRuleModal");
+  if (modal) modal.style.display = "block";
   addLog("開啟 Notifications Rule 面板");
 }
 
 function closeNotificationsRuleModal() {
-  document.getElementById("notificationsRuleModal").style.display = "none";
+  const modal = document.getElementById("notificationsRuleModal");
+  if (modal) modal.style.display = "none";
 }
 
 function saveNotificationsRule() {
@@ -375,12 +373,14 @@ function saveNotificationsRule() {
 // Charts Modal
 function showCharts() {
   closeMenu();
-  document.getElementById("chartsModal").style.display = "block";
+  const modal = document.getElementById("chartsModal");
+  if (modal) modal.style.display = "block";
   addLog("開啟數據圖表");
 }
 
 function closeChartsModal() {
-  document.getElementById("chartsModal").style.display = "none";
+  const modal = document.getElementById("chartsModal");
+  if (modal) modal.style.display = "none";
 }
 
 // Actions Modal
