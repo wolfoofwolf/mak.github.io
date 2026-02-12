@@ -19,9 +19,21 @@
         }
         .menu-btn { font-size: 1.8rem; cursor: pointer; color: #eee; }
         .title { font-size: 1.4rem; margin: 0; }
+        .main-layout {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
         .container {
-            max-width: 500px; margin: 30px auto;
+            max-width: 500px;
             background: #1a1a1a; border-radius: 12px; padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .sidebar-data {
+            width: 300px;
+            background: #1a1a1a; border-radius: 12px; padding: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
         .data-box {
@@ -124,6 +136,22 @@
             background: #1e293b;
         }
         .input-group input::placeholder { color: #6b7280; }
+        /* 右邊最新資料方塊 */
+        .sidebar-data {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            width: 300px;
+        }
+        .sidebar-data h3 {
+            margin-top: 0;
+            color: #4fc3f7;
+        }
+        .sidebar-data p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -133,22 +161,26 @@
     <div></div>
 </div>
 
-<div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
-    <a href="#" onclick="showNotificationsRule()">Notifications Rule</a>
-    <a href="#" onclick="showActions()">Actions</a>
-    <a href="#" onclick="showLog()">Log</a>
-</div>
+<div class="main-layout">
+    <div class="container">
+        <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
+        <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
+        <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
+        <div class="time" id="updateTime">Last updated: loading...</div>
+        <div class="buttons">
+            <button onclick="updateData()">Refresh Data</button>
+            <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
+            <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
+        </div>
+    </div>
 
-<div class="container">
-    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
-    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
-    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
-    <div class="time" id="updateTime">Last updated: loading...</div>
-    <div class="buttons">
-        <button onclick="updateData()">Refresh Data</button>
-        <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
-        <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
+    <!-- 右邊最新資料方塊 -->
+    <div class="sidebar-data">
+        <h3>最新資料時間</h3>
+        <p id="latestDate">Date: loading...</p>
+        <p id="latestTemp">Temperature: -- °C</p>
+        <p id="latestHumid">Humidity: -- %</p>
+        <p id="latestFlame">Flame: --</p>
     </div>
 </div>
 
@@ -172,10 +204,6 @@
         <div class="input-group">
             <label>通知 Email</label>
             <input type="email" id="notifyEmail" placeholder="makmingkit144@gmail.com">
-        </div>
-        <div class="input-group">
-            <label>冷卻時間（秒）</label>
-            <input type="number" id="cooldownSeconds" placeholder="例如 300（5分鐘）" value="300" min="60">
         </div>
         <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存規則</button>
     </div>
@@ -237,7 +265,7 @@
 </div>
 
 <script>
-// EmailJS 初始化（你的 User ID）
+// EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log 系統
@@ -286,11 +314,8 @@ function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || {
   tempThreshold: null,
   humidThreshold: null,
-  notifyEmail: "",
-  cooldownSeconds: 300  // 預設 5 分鐘 CD
+  notifyEmail: ""
 };
-
-let lastNotificationTime = 0;  // 上次發送通知的時間戳
 
 function showNotificationsRule() {
   closeMenu();
@@ -299,7 +324,6 @@ function showNotificationsRule() {
   document.getElementById("tempThreshold").value = notificationsRule.tempThreshold || "";
   document.getElementById("humidThreshold").value = notificationsRule.humidThreshold || "";
   document.getElementById("notifyEmail").value = notificationsRule.notifyEmail || "";
-  document.getElementById("cooldownSeconds").value = notificationsRule.cooldownSeconds || 300;
   addLog("開啟 Notifications Rule 面板");
 }
 
@@ -311,18 +335,16 @@ function saveNotificationsRule() {
   const temp = document.getElementById("tempThreshold").value;
   const humid = document.getElementById("humidThreshold").value;
   const email = document.getElementById("notifyEmail").value;
-  const cooldown = document.getElementById("cooldownSeconds").value;
 
   notificationsRule = {
     tempThreshold: temp ? Number(temp) : null,
     humidThreshold: humid ? Number(humid) : null,
-    notifyEmail: email,
-    cooldownSeconds: cooldown ? Number(cooldown) : 300
+    notifyEmail: email
   };
 
   localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
-  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
-  alert("規則已儲存！網頁會自動監控並發送通知（CD 為 " + cooldown + " 秒）");
+  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}`);
+  alert("規則已儲存！網頁會自動監控並發送通知");
   closeNotificationsRuleModal();
 }
 
@@ -330,30 +352,17 @@ function saveNotificationsRule() {
 setInterval(() => {
   if (notificationsRule.notifyEmail === "") return;
 
-  const now = Date.now();
-  if (now - lastNotificationTime < notificationsRule.cooldownSeconds * 1000) return;  // CD 還沒過
-
   const tempText = document.getElementById('tempDisplay').textContent;
   const humidText = document.getElementById('humidDisplay').textContent;
   const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 0);
   const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 0);
 
-  let triggered = false;
-  let alertMsg = "";
-
   if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
-    alertMsg += `溫度警報！目前 ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C\n`;
-    triggered = true;
+    sendNotificationEmail("溫度警報！", `目前溫度: ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C`);
   }
 
   if (notificationsRule.humidThreshold && humid < notificationsRule.humidThreshold) {
-    alertMsg += `濕度警報！目前 ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %\n`;
-    triggered = true;
-  }
-
-  if (triggered) {
-    sendNotificationEmail("環境監控警報", alertMsg);
-    lastNotificationTime = now;
+    sendNotificationEmail("濕度警報！", `目前濕度: ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %`);
   }
 }, 20000);
 
@@ -368,14 +377,12 @@ function sendNotificationEmail(subject, message) {
              "時間: " + new Date().toLocaleString('zh-TW')
   }).then(() => {
     addLog("自動通知發送成功", subject);
-    console.log("自動通知發送成功");
   }).catch(err => {
     addLog("自動通知發送失敗", err.text || err);
-    console.error("自動通知發送失敗:", err);
   });
 }
 
-// Actions Modal 與原有功能（完全保留你原本的）
+// Actions Modal 與原有功能（完全保留）
 function showActions() {
   closeMenu();
   document.getElementById("actionsModal").style.display = "block";
@@ -512,31 +519,33 @@ function updateData() {
     .then(d => {
       const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
       document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
+      document.getElementById('latestTemp').textContent = `Temperature: ${temp} °C`;
     });
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
     .then(r => r.json())
     .then(d => {
       const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
       document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
+      document.getElementById('latestHumid').textContent = `Humidity: ${humid} %`;
     });
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
     .then(r => r.json())
     .then(d => {
       const flame = d.field3;
       let text = '--';
-      let cls = 'flame-normal';
-      if (flame == 0) {
-        text = "Flame Detected! 🔥";
-        cls = 'flame-alert';
-      } else if (flame == 1) {
-        text = "No Flame ✅";
-        cls = 'flame-normal';
-      }
+      if (flame == 0) text = "Flame Detected! 🔥";
+      else if (flame == 1) text = "No Flame ✅";
       document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
-      document.getElementById('flameBox').className = 'data-box ' + cls;
+      document.getElementById('latestFlame').textContent = `Flame: ${text}`;
     });
-  document.getElementById('updateTime').textContent =
-    `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+  // 顯示最新 Date（從任意一筆資料取 created_at）
+  fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const date = new Date(d.created_at).toLocaleString('zh-TW');
+      document.getElementById('latestDate').textContent = `Date: ${date}`;
+      document.getElementById('updateTime').textContent = `Last updated: ${date}`;
+    });
 }
 function controlLed(type, state) {
   addLog("LED 控制", `type=${type}, state=${state}`);
