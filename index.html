@@ -48,7 +48,7 @@
         }
         /* Sidebar */
         .sidebar {
-            height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0;
+            height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; left: 0;
             background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.8);
         }
@@ -60,7 +60,7 @@
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
         /* Modal */
         .actions-modal {
-            display: none; position: fixed; z-index: 20; left: 0; top: 0;
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
             width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto;
         }
         .actions-content {
@@ -227,7 +227,7 @@
     </div>
 </div>
 
-<!-- Charts Modal（新加） -->
+<!-- Charts Modal -->
 <div id="chartsModal" class="actions-modal">
     <div class="chart-modal-content">
         <div class="actions-header">
@@ -276,7 +276,7 @@
 </div>
 
 <script>
-// EmailJS 初始化（你的 User ID）
+// EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log 系統
