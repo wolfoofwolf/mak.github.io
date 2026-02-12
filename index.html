@@ -19,35 +19,10 @@
         }
         .menu-btn { font-size: 1.8rem; cursor: pointer; color: #eee; }
         .title { font-size: 1.4rem; margin: 0; }
-        .main-layout {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            padding: 30px;
-            flex-wrap: wrap;
-        }
         .container {
-            max-width: 500px;
+            max-width: 500px; margin: 30px auto;
             background: #1a1a1a; border-radius: 12px; padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-        }
-        .sidebar-chart {
-            width: 420px;
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        .sidebar-chart h3 {
-            margin: 0 0 15px 0;
-            color: #ff9800;
-            font-size: 1.3rem;
-        }
-        .sidebar-chart iframe {
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 20px;
         }
         .data-box {
             background: #222; border-radius: 10px; padding: 20px; margin: 15px 0;
@@ -149,6 +124,27 @@
             background: #1e293b;
         }
         .input-group input::placeholder { color: #6b7280; }
+        /* 圖表 Modal 樣式 */
+        .chart-modal-content {
+            background: #161b22;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+        .chart-modal-content h2 {
+            color: #ff9800;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            margin: 30px 0;
+        }
+        .chart-container h4 {
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -158,40 +154,15 @@
     <div></div>
 </div>
 
-<div class="main-layout">
-    <div class="container">
-        <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
-        <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
-        <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
-        <div class="time" id="updateTime">Last updated: loading...</div>
-        <div class="buttons">
-            <button onclick="updateData()">Refresh Data</button>
-            <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
-            <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
-        </div>
-    </div>
-
-    <!-- 右邊 ThingSpeak 圖表區塊（溫度 + 濕度） -->
-    <div class="sidebar-chart">
-        <h3>Field 1 Chart (DHT11 溫度)</h3>
-        <iframe 
-            width="100%" 
-            height="340" 
-            style="border: none; background: #111111;" 
-            src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&title=DHT11%20溫度&type=line&xaxis=Date&yaxis=Temperature%20(°C)&yaxismax=40&yaxismin=10&showlegend=false&showxaxislabel=true&showyaxislabel=true">
-        </iframe>
-
-        <h3 style="margin-top: 30px;">Field 2 Chart (DHT11 濕度)</h3>
-        <iframe 
-            width="100%" 
-            height="340" 
-            style="border: none; background: #111111;" 
-            src="https://thingspeak.com/channels/3252434/charts/2?bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&title=DHT11%20濕度&type=line&xaxis=Date&yaxis=Humidity%20(%)&yaxismax=100&yaxismin=0&showlegend=false&showxaxislabel=true&showyaxislabel=true">
-        </iframe>
-
-        <p style="text-align: center; margin-top: 10px; color: #888; font-size: 0.9rem;">
-            資料來自 ThingSpeak
-        </p>
+<div class="container">
+    <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
+    <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
+    <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
+    <div class="time" id="updateTime">Last updated: loading...</div>
+    <div class="buttons">
+        <button onclick="updateData()">Refresh Data</button>
+        <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
+        <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
     </div>
 </div>
 
@@ -256,6 +227,35 @@
     </div>
 </div>
 
+<!-- Charts Modal（新加的） -->
+<div id="chartsModal" class="actions-modal">
+    <div class="chart-modal-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">數據圖表</h2>
+            <button onclick="closeChartsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <div class="chart-container">
+            <h4>Field 1 Chart (DHT11 溫度)</h4>
+            <iframe 
+                width="100%" 
+                height="340" 
+                style="border: none; background: #111111;" 
+                src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&title=DHT11%20溫度&type=line&xaxis=Date&yaxis=Temperature%20(°C)&yaxismax=40&yaxismin=10&showlegend=false&showxaxislabel=true&showyaxislabel=true">
+            </iframe>
+        </div>
+        <div class="chart-container">
+            <h4>Field 2 Chart (DHT11 濕度)</h4>
+            <iframe 
+                width="100%" 
+                height="340" 
+                style="border: none; background: #111111;" 
+                src="https://thingspeak.com/channels/3252434/charts/2?bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&title=DHT11%20濕度&type=line&xaxis=Date&yaxis=Humidity%20(%)&yaxismax=100&yaxismin=0&showlegend=false&showxaxislabel=true&showyaxislabel=true">
+            </iframe>
+        </div>
+        <p style="text-align: center; margin-top: 20px; color: #888;">資料來自 ThingSpeak</p>
+    </div>
+</div>
+
 <!-- Edit Email Modal -->
 <div id="editEmailModal" class="actions-modal">
     <div class="actions-content">
@@ -276,7 +276,7 @@
 </div>
 
 <script>
-// EmailJS 初始化（你的 User ID）
+// EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log 系統
@@ -359,41 +359,18 @@ function saveNotificationsRule() {
   closeNotificationsRuleModal();
 }
 
-// Auto 檢查並發 Email（每 20 秒）
-setInterval(() => {
-  if (notificationsRule.notifyEmail === "") return;
-
-  const tempText = document.getElementById('tempDisplay').textContent;
-  const humidText = document.getElementById('humidDisplay').textContent;
-  const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 0);
-  const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 0);
-
-  if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
-    sendNotificationEmail("溫度警報！", `目前溫度: ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C`);
-  }
-
-  if (notificationsRule.humidThreshold && humid < notificationsRule.humidThreshold) {
-    sendNotificationEmail("濕度警報！", `目前濕度: ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %`);
-  }
-}, 20000);
-
-function sendNotificationEmail(subject, message) {
-  emailjs.send("FYP", "FYP", {
-    to_email: notificationsRule.notifyEmail,
-    subject: subject,
-    message: message + "\n\n" +
-             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
-             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
-             "火焰狀態: " + document.getElementById('flameDisplay').textContent + "\n" +
-             "時間: " + new Date().toLocaleString('zh-TW')
-  }).then(() => {
-    addLog("自動通知發送成功", subject);
-  }).catch(err => {
-    addLog("自動通知發送失敗", err.text || err);
-  });
+// Charts Modal
+function showCharts() {
+  closeMenu();
+  document.getElementById("chartsModal").style.display = "block";
+  addLog("開啟數據圖表");
 }
 
-// Actions Modal 與原有功能（完全保留）
+function closeChartsModal() {
+  document.getElementById("chartsModal").style.display = "none";
+}
+
+// Actions Modal
 function showActions() {
   closeMenu();
   document.getElementById("actionsModal").style.display = "block";
