@@ -245,7 +245,7 @@ function renderLogList() {
 function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
 function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
 
-// Notifications Rule Modal - 完整版（有 CD + 自動發信）
+// Notifications Rule Modal - 完整版
 let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || {
   tempThreshold: null,
   humidThreshold: null,
@@ -289,7 +289,7 @@ function saveNotificationsRule() {
   closeNotificationsRuleModal();
 }
 
-// Auto 檢查並發 Email - 完整版
+// Auto 檢查並發 Email
 setInterval(() => {
   if (notificationsRule.notifyEmail === "") return;
 
@@ -347,19 +347,19 @@ function closeChartsModal() {
   document.getElementById("chartsModal").style.display = "none";
 }
 
-// 重新載入圖表（Refresh Data 功能）- 使用時間戳方式（最穩，不會壞參數）
+// 重新載入圖表（最穩定的方式：加時間戳）
 function updateCharts() {
   const field1 = document.getElementById("field1Chart");
   const field2 = document.getElementById("field2Chart");
   
   if (field1) {
     const src1 = field1.src;
-    field1.src = src1.split('?')[0] + '?' + (src1.split('?')[1] || '') + (src1.includes('?') ? '&' : '') + '_t=' + new Date().getTime();
+    field1.src = src1 + (src1.indexOf('?') >= 0 ? '&' : '?') + '_t=' + new Date().getTime();
   }
   
   if (field2) {
     const src2 = field2.src;
-    field2.src = src2.split('?')[0] + '?' + (src2.split('?')[1] || '') + (src2.includes('?') ? '&' : '') + '_t=' + new Date().getTime();
+    field2.src = src2 + (src2.indexOf('?') >= 0 ? '&' : '?') + '_t=' + new Date().getTime();
   }
   
   addLog("手動刷新圖表資料");
