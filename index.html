@@ -26,7 +26,7 @@
         .version { position: fixed; bottom: 10px; right: 20px; font-size: 0.8rem; color: #555; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
         /* Sidebar */
         .sidebar {
-            height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0;
+            height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; left: 0;
             background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.8);
         }
@@ -35,7 +35,7 @@
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
         /* Modal */
         .actions-modal {
-            display: none; position: fixed; z-index: 10000; left: 0; top: 0;
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
             width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto;
         }
         .actions-content { background: #161b22; margin: 5% auto; width: 90%; max-width: 900px; border-radius: 12px; padding: 25px; }
@@ -87,7 +87,7 @@
     </div>
 </div>
 
-<div class="version">Version: v2.2 - 2026/02/12</div>
+<div class="version">Version: v2.3 - 2026/02/12</div>
 
 <!-- Sidebar -->
 <div id="sidebar" class="sidebar">
@@ -170,11 +170,11 @@
         </div>
         <div class="chart-container">
             <h4>Field 1 Chart (DHT11 溫度)</h4>
-            <iframe width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Temperature (°C)&yaxismax=40&yaxismin=10&showlegend=false"></iframe>
+            <iframe width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/1?bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Temperature °C&yaxismax=40&yaxismin=10&showlegend=false"></iframe>
         </div>
         <div class="chart-container">
             <h4>Field 2 Chart (DHT11 濕度)</h4>
-            <iframe width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/2?bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Humidity (%)&yaxismax=100&yaxismin=0&showlegend=false"></iframe>
+            <iframe width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/2?bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Humidity %&yaxismax=100&yaxismin=0&showlegend=false"></iframe>
         </div>
         <p style="text-align: center; margin-top: 20px; color: #888;">資料來自 ThingSpeak</p>
     </div>
@@ -241,13 +241,13 @@ function renderLogList() {
     container.innerHTML = html;
 }
 
-// Sidebar 控制（加強防錯）
+// Sidebar 控制
 function openMenu() {
     const sidebar = document.getElementById("sidebar");
     if (sidebar) {
         sidebar.style.width = "280px";
     } else {
-        console.error("找不到 sidebar 元素，請檢查 HTML 是否有 <div id='sidebar' class='sidebar'> 這行");
+        console.error("找不到 sidebar 元素，請檢查 HTML 是否有 <div id='sidebar' class='sidebar'>");
     }
 }
 
@@ -263,10 +263,10 @@ let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) ||
   tempThreshold: null,
   humidThreshold: null,
   notifyEmail: "",
-  cooldownSeconds: 300  // 預設 5 分鐘 CD
+  cooldownSeconds: 300
 };
 
-let lastNotificationTime = 0;  // 上次發送時間戳
+let lastNotificationTime = 0;
 
 function showNotificationsRule() {
   closeMenu();
@@ -302,12 +302,12 @@ function saveNotificationsRule() {
   closeNotificationsRuleModal();
 }
 
-// Auto 檢查並發 Email（每 20 秒）
+// Auto 檢查並發 Email
 setInterval(() => {
   if (notificationsRule.notifyEmail === "") return;
 
   const now = Date.now();
-  if (now - lastNotificationTime < notificationsRule.cooldownSeconds * 1000) return;  // CD 還沒過
+  if (now - lastNotificationTime < notificationsRule.cooldownSeconds * 1000) return;
 
   const tempText = document.getElementById('tempDisplay').textContent;
   const humidText = document.getElementById('humidDisplay').textContent;
@@ -344,10 +344,8 @@ function sendNotificationEmail(subject, message) {
              "時間: " + new Date().toLocaleString('zh-TW')
   }).then(() => {
     addLog("自動通知發送成功", subject);
-    console.log("通知發送成功");
   }).catch(err => {
     addLog("自動通知發送失敗", err.text || err);
-    console.error("通知發送失敗:", err);
   });
 }
 
