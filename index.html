@@ -336,7 +336,7 @@ function sendNotificationEmail(subject, message) {
   });
 }
 
-// Charts Modal 控制
+// Charts Modal
 function showCharts() {
   closeMenu();
   document.getElementById("chartsModal").style.display = "block";
@@ -347,19 +347,21 @@ function closeChartsModal() {
   document.getElementById("chartsModal").style.display = "none";
 }
 
-// 重新載入圖表（Refresh Data 功能）
+// 重新載入圖表（Refresh Data 功能）- 使用時間戳方式
 function updateCharts() {
   const field1 = document.getElementById("field1Chart");
   const field2 = document.getElementById("field2Chart");
   
   if (field1) {
-    const src1 = field1.src;
-    field1.src = src1 + (src1.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime();  // 加時間戳強制重載
+    const baseSrc = field1.src.split('?')[0]; // 取出基本 URL
+    const params = field1.src.split('?')[1] || '';
+    field1.src = baseSrc + (params ? '?' + params + '&' : '?') + '_t=' + new Date().getTime();
   }
   
   if (field2) {
-    const src2 = field2.src;
-    field2.src = src2 + (src2.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime();
+    const baseSrc = field2.src.split('?')[0];
+    const params = field2.src.split('?')[1] || '';
+    field2.src = baseSrc + (params ? '?' + params + '&' : '?') + '_t=' + new Date().getTime();
   }
   
   addLog("手動刷新圖表資料");
