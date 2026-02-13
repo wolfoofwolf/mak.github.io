@@ -174,7 +174,7 @@
         </div>
         <div class="chart-container">
             <h4>Field 2 Chart (DHT11 濕度)</h4>
-            <iframe id="field2Chart" width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/2?api_key=PKQNQOPCZYREXB6C&bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Humidity %&yaxismax=100&yaxismin=0&showlegend=false"></iframe>
+            <iframe id="field2Chart" width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/2?api_key=PKQNQOPCZYREXB6C&bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Humidity&yaxismax=100&yaxismin=0&showlegend=false"></iframe>
         </div>
         <p style="text-align: center; margin-top: 20px; color: #888;">資料來自 ThingSpeak</p>
     </div>
@@ -347,19 +347,19 @@ function closeChartsModal() {
   document.getElementById("chartsModal").style.display = "none";
 }
 
-// 重新載入圖表（最穩方式：使用時間戳強制刷新）
+// 重新載入圖表（使用時間戳方式，最穩定）
 function updateCharts() {
   const field1 = document.getElementById("field1Chart");
   const field2 = document.getElementById("field2Chart");
   
   if (field1) {
-    const src1 = field1.src;
-    field1.src = src1.split('?')[0] + '?' + (src1.split('?')[1] || '') + (src1.includes('?') ? '&' : '') + '_t=' + new Date().getTime();
+    let src1 = field1.src;
+    field1.src = src1 + (src1.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime();
   }
   
   if (field2) {
-    const src2 = field2.src;
-    field2.src = src2.split('?')[0] + '?' + (src2.split('?')[1] || '') + (src2.includes('?') ? '&' : '') + '_t=' + new Date().getTime();
+    let src2 = field2.src;
+    field2.src = src2 + (src2.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime();
   }
   
   addLog("手動刷新圖表資料");
