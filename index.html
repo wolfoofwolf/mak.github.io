@@ -24,11 +24,18 @@
         .auto-mode { background: #2196f3; }
         .all-off { background: #757575; }
         .version { position: fixed; bottom: 10px; right: 20px; font-size: 0.8rem; color: #555; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
-        .sidebar { height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0; background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.8); }
+        .sidebar {
+            height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0;
+            background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
+        }
         .sidebar a { padding: 15px 30px; font-size: 1.2rem; color: #ccc; display: block; cursor: pointer; }
         .sidebar a:hover { color: #f1f1f1; }
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
-        .actions-modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
+        .actions-modal {
+            display: none; position: fixed; z-index: 20; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto;
+        }
         .actions-content { background: #161b22; margin: 5% auto; width: 90%; max-width: 900px; border-radius: 12px; padding: 25px; }
         .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .search-box { width: 60%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
@@ -56,33 +63,6 @@
         .chart-modal-content h2 { color: #ff9800; margin-bottom: 20px; }
         .chart-container { margin: 30px 0; }
         .chart-container h4 { color: #ff9800; margin-bottom: 10px; }
-
-        /* === 新增：機櫃健康分數樣式 === */
-        .health-card {
-            background: #222;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            margin: 25px 0;
-        }
-        .health-score {
-            font-size: 68px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .health-circle {
-            width: 130px;
-            height: 130px;
-            margin: 15px auto;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6);
-        }
     </style>
 </head>
 <body>
@@ -96,15 +76,6 @@
     <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
     <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
     <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
-
-    <!-- 新增：機櫃健康分數 -->
-    <div class="health-card">
-        <h3 style="color:#ff9800; margin:0 0 12px 0;">機櫃健康分數</h3>
-        <div id="healthScore" class="health-score">---</div>
-        <div id="healthCircle" class="health-circle">---</div>
-        <p id="healthMessage" style="margin:8px 0 0 0; font-size:17px;">計算中...</p>
-    </div>
-
     <div class="time" id="updateTime">Last updated: loading...</div>
     <div class="buttons">
         <button onclick="updateData()">Refresh Data</button>
@@ -113,9 +84,9 @@
     </div>
 </div>
 
-<div class="version">Version: v2.8 - 2026/02/25</div>
+<div class="version">Version: v2.6 - 2026/02/12</div>
 
-<!-- Sidebar 和所有 Modal 保持不變（以下全部保留你原本的） -->
+<!-- Sidebar -->
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <a href="#" onclick="showNotificationsRule()">Notifications Rule</a>
@@ -124,110 +95,462 @@
     <a href="#" onclick="showCharts()">Charts</a>
 </div>
 
-<!-- Notifications Rule Modal、Actions Modal、Log Modal、Charts Modal、Edit Email Modal 全部保持你原本的程式碼 -->
-<!-- （這裡省略以節省篇幅，你原本有的就保留不動） -->
+<!-- Notifications Rule Modal -->
+<div id="notificationsRuleModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">Notifications Rule</h2>
+            <button onclick="closeNotificationsRuleModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <div class="input-group">
+            <label>溫度超過 (°C) 時通知</label>
+            <input type="number" id="tempThreshold" placeholder="例如 30" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>濕度低於 (%) 時通知</label>
+            <input type="number" id="humidThreshold" placeholder="例如 40" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>通知 Email</label>
+            <input type="email" id="notifyEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>冷卻時間（秒）</label>
+            <input type="number" id="cooldownSeconds" placeholder="例如 300" value="300" min="60">
+        </div>
+        <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存規則</button>
+    </div>
+</div>
+
+<!-- Actions Modal -->
+<div id="actionsModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">Actions</h2>
+            <button onclick="closeActionsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <div style="margin-bottom:15px;">
+            <input type="text" id="searchAction" placeholder="Search..." class="search-box">
+            <button onclick="addSNMPTrap()" class="add-btn">+ ADD</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Action Type</th>
+                    <th>Action Name</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="actionList"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Log Modal -->
+<div id="logModal" class="actions-modal">
+    <div class="actions-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">System Log</h2>
+            <button onclick="closeLogModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <button class="clear-log-btn" onclick="clearLog()">Clear All Logs</button>
+        <div id="logList" style="margin-top:15px; max-height:60vh; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- Charts Modal（已加 Refresh Data 按鈕） -->
+<div id="chartsModal" class="actions-modal">
+    <div class="chart-modal-content">
+        <div class="actions-header">
+            <h2 style="margin:0; color:#ff9800;">數據圖表</h2>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="updateCharts()" style="background:#4caf50; padding:8px 16px; color:white;">Refresh Data</button>
+                <button onclick="closeChartsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h4>Field 1 Chart (DHT11 溫度)</h4>
+            <iframe id="field1Chart" width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/1?api_key=PKQNQOPCZYREXB6C&bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Temperature °C&yaxismax=40&yaxismin=10&showlegend=false"></iframe>
+        </div>
+        <div class="chart-container">
+            <h4>Field 2 Chart (DHT11 濕度)</h4>
+            <iframe id="field2Chart" width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/2?api_key=PKQNQOPCZYREXB6C&bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Humidity&yaxismax=100&yaxismin=0&showlegend=false"></iframe>
+        </div>
+        <p style="text-align: center; margin-top: 20px; color: #888;">資料來自 ThingSpeak</p>
+    </div>
+</div>
+
+<!-- Edit Email Modal -->
+<div id="editEmailModal" class="actions-modal">
+    <div class="actions-content">
+        <h2 style="margin-top:0;">Edit Email Settings for Action</h2>
+        <div class="input-group">
+            <label>From Email (Sender)</label>
+            <input type="email" id="fromEmail" placeholder="yourname@example.com">
+        </div>
+        <div class="input-group">
+            <label>To Email (Receiver)</label>
+            <input type="email" id="toEmail" placeholder="makmingkit144@gmail.com">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <button onclick="saveActionEmail()" style="flex: 1; background:#238636; padding:12px; border-radius:6px;">Save</button>
+            <button onclick="closeEditEmailModal()" style="flex: 1; background:#f44336; padding:12px; border-radius:6px;">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <script>
-// ==================== 你原本的所有程式碼保持不變 ====================
-// EmailJS、Log 系統、Sidebar、Notifications Rule、Charts、Actions、Log 等全部不動
-// 只在 updateData() 最後加上健康分數更新
+// EmailJS 初始化
+emailjs.init("DesLsbj7IJqknmZFq");
 
-// ==================== 新增健康分數計算函式 ====================
-function updateHealthScore() {
-    const tempText = document.getElementById('tempDisplay').textContent;
-    const humidText = document.getElementById('humidDisplay').textContent;
-    const flameText = document.getElementById('flameDisplay').textContent;
-
-    const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 25);
-    const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 50);
-    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰");
-
-    let score = 100;
-
-    // 溫度分 (最佳 18-27°C)
-    if (temp < 18) score -= (18 - temp) * 4;
-    if (temp > 27) score -= (temp - 27) * 4;
-
-    // 濕度分 (最佳 40-60%)
-    if (humid < 40) score -= (40 - humid) * 2;
-    if (humid > 60) score -= (humid - 60) * 2;
-
-    // 火焰直接扣大分
-    if (hasFlame) score -= 40;
-
-    score = Math.max(0, Math.min(100, Math.round(score)));
-
-    let color = "#4caf50";
-    let message = "正常";
-    if (score < 60) {
-        color = "#f44336";
-        message = "危險！請立即檢查";
-    } else if (score < 80) {
-        color = "#ff9800";
-        message = "注意！環境異常";
+// Log 系統
+let logEntries = JSON.parse(localStorage.getItem("systemLog")) || [];
+function addLog(action, details = "") {
+    const entry = {
+        time: new Date().toLocaleString('zh-TW'),
+        action: action,
+        details: details
+    };
+    logEntries.unshift(entry);
+    localStorage.setItem("systemLog", JSON.stringify(logEntries));
+    renderLogList();
+}
+function clearLog() {
+    if (confirm("確定要清除所有日誌嗎？")) {
+        logEntries = [];
+        localStorage.removeItem("systemLog");
+        renderLogList();
+        addLog("系統日誌已全部清除");
     }
-
-    document.getElementById("healthScore").textContent = score;
-    document.getElementById("healthScore").style.color = color;
-    document.getElementById("healthCircle").style.background = color;
-    document.getElementById("healthCircle").textContent = score;
-    document.getElementById("healthMessage").textContent = message;
-    document.getElementById("healthMessage").style.color = color;
+}
+function renderLogList() {
+    const container = document.getElementById("logList");
+    let html = "";
+    if (logEntries.length === 0) {
+        html = "<p style='color:#888; text-align:center;'>目前沒有日誌</p>";
+    } else {
+        logEntries.forEach(entry => {
+            html += `
+                <div class="log-entry">
+                    <div class="log-time">${entry.time}</div>
+                    <div class="log-action">${entry.action}</div>
+                    ${entry.details ? `<div class="log-detail">${entry.details}</div>` : ""}
+                </div>`;
+        });
+    }
+    container.innerHTML = html;
 }
 
-// ==================== 修改 updateData() ====================
+// Sidebar 控制
+function openMenu() { document.getElementById("sidebar").style.width = "280px"; }
+function closeMenu() { document.getElementById("sidebar").style.width = "0"; }
+
+// Notifications Rule Modal - 完整版（有 CD + 自動發信）
+let notificationsRule = JSON.parse(localStorage.getItem("notificationsRule")) || {
+  tempThreshold: null,
+  humidThreshold: null,
+  notifyEmail: "",
+  cooldownSeconds: 300
+};
+
+let lastNotificationTime = 0;
+
+function showNotificationsRule() {
+  closeMenu();
+  document.getElementById("notificationsRuleModal").style.display = "block";
+  
+  document.getElementById("tempThreshold").value = notificationsRule.tempThreshold || "";
+  document.getElementById("humidThreshold").value = notificationsRule.humidThreshold || "";
+  document.getElementById("notifyEmail").value = notificationsRule.notifyEmail || "";
+  document.getElementById("cooldownSeconds").value = notificationsRule.cooldownSeconds || 300;
+  addLog("開啟 Notifications Rule 面板");
+}
+
+function closeNotificationsRuleModal() {
+  document.getElementById("notificationsRuleModal").style.display = "none";
+}
+
+function saveNotificationsRule() {
+  const temp = document.getElementById("tempThreshold").value;
+  const humid = document.getElementById("humidThreshold").value;
+  const email = document.getElementById("notifyEmail").value;
+  const cooldown = document.getElementById("cooldownSeconds").value;
+
+  notificationsRule = {
+    tempThreshold: temp ? Number(temp) : null,
+    humidThreshold: humid ? Number(humid) : null,
+    notifyEmail: email,
+    cooldownSeconds: cooldown ? Number(cooldown) : 300
+  };
+
+  localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
+  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
+  alert("規則已儲存！網頁會自動監控並發送通知（冷卻 " + cooldown + " 秒）");
+  closeNotificationsRuleModal();
+}
+
+// Auto 檢查並發 Email - 完整版
+setInterval(() => {
+  if (notificationsRule.notifyEmail === "") return;
+
+  const now = Date.now();
+  if (now - lastNotificationTime < notificationsRule.cooldownSeconds * 1000) return;
+
+  const tempText = document.getElementById('tempDisplay').textContent;
+  const humidText = document.getElementById('humidDisplay').textContent;
+  const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 0);
+  const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 0);
+
+  let triggered = false;
+  let alertMsg = "";
+
+  if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
+    alertMsg += `溫度警報！目前 ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C\n`;
+    triggered = true;
+  }
+
+  if (notificationsRule.humidThreshold && humid < notificationsRule.humidThreshold) {
+    alertMsg += `濕度警報！目前 ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %\n`;
+    triggered = true;
+  }
+
+  if (triggered) {
+    sendNotificationEmail("環境監控警報", alertMsg);
+    lastNotificationTime = now;
+  }
+}, 20000);
+
+function sendNotificationEmail(subject, message) {
+  emailjs.send("FYP", "FYP", {
+    to_email: notificationsRule.notifyEmail,
+    subject: subject,
+    message: message + "\n\n" +
+             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "火焰狀態: " + document.getElementById('flameDisplay').textContent + "\n" +
+             "時間: " + new Date().toLocaleString('zh-TW')
+  }).then(() => {
+    addLog("自動通知發送成功", subject);
+  }).catch(err => {
+    addLog("自動通知發送失敗", err.text || err);
+  });
+}
+
+// Charts Modal
+function showCharts() {
+  closeMenu();
+  document.getElementById("chartsModal").style.display = "block";
+  addLog("開啟數據圖表");
+}
+
+function closeChartsModal() {
+  document.getElementById("chartsModal").style.display = "none";
+}
+
+// 重新載入圖表（使用時間戳方式，最穩定）
+function updateCharts() {
+  const field1 = document.getElementById("field1Chart");
+  const field2 = document.getElementById("field2Chart");
+  
+  if (field1) {
+    let src1 = field1.src;
+    field1.src = src1 + (src1.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime();
+  }
+  
+  if (field2) {
+    let src2 = field2.src;
+    field2.src = src2 + (src2.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime();
+  }
+  
+  addLog("手動刷新圖表資料");
+}
+
+// Actions Modal
+function showActions() {
+  closeMenu();
+  document.getElementById("actionsModal").style.display = "block";
+  renderActionList();
+  addLog("開啟 Actions 面板");
+}
+function closeActionsModal() {
+  document.getElementById("actionsModal").style.display = "none";
+}
+
+// Log Modal
+function showLog() {
+  closeMenu();
+  renderLogList();
+  document.getElementById("logModal").style.display = "block";
+}
+function closeLogModal() {
+  document.getElementById("logModal").style.display = "none";
+}
+
+// Email settings modal
+function openEditEmailModal(id) {
+  document.getElementById("editEmailModal").style.display = "block";
+  window.currentEditId = id;
+  const action = actions.find(a => a.id === id);
+  document.getElementById("fromEmail").value = action.fromEmail || "";
+  document.getElementById("toEmail").value = action.toEmail || "";
+}
+function closeEditEmailModal() {
+  document.getElementById("editEmailModal").style.display = "none";
+}
+function saveActionEmail() {
+  const id = window.currentEditId;
+  const action = actions.find(a => a.id === id);
+  const from = document.getElementById("fromEmail").value;
+  const to = document.getElementById("toEmail").value;
+ 
+  action.fromEmail = from;
+  action.toEmail = to;
+  saveActions();
+ 
+  addLog("更新 Email 設定", `Action: ${action.name} | From: ${from} | To: ${to}`);
+  alert("Email 設定已儲存");
+  closeEditEmailModal();
+}
+
+// Actions management
+let actions = JSON.parse(localStorage.getItem("actions")) || [
+  { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
+];
+function saveActions() {
+  localStorage.setItem("actions", JSON.stringify(actions));
+}
+function renderActionList() {
+  let html = "";
+  actions.forEach(a => {
+    html += `
+      <tr class="action-row">
+        <td>${a.type}</td>
+        <td>${a.name}</td>
+        <td style="text-align:right;">
+          <button class="action-btn edit-btn" onclick="openEditEmailModal(${a.id})">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteAction(${a.id})">Delete</button>
+          <button class="action-btn duplicate-btn" onclick="duplicateAction(${a.id})">Duplicate</button>
+          <button class="action-btn test-btn" onclick="testAction(${a.id})">Test</button>
+        </td>
+      </tr>`;
+  });
+  document.getElementById("actionList").innerHTML = html;
+}
+function addSNMPTrap() {
+  const name = prompt("輸入 SNMP Trap Action 名稱:", "SNMP Trap Action " + (actions.length + 1));
+  if (name) {
+    const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
+    actions.push(newAction);
+    saveActions();
+    renderActionList();
+    addLog("新增 Action", name);
+  }
+}
+function deleteAction(id) {
+  if (confirm("確定要刪除嗎？")) {
+    const action = actions.find(a => a.id === id);
+    actions = actions.filter(a => a.id !== id);
+    saveActions();
+    renderActionList();
+    addLog("刪除 Action", action ? action.name : "未知");
+  }
+}
+function duplicateAction(id) {
+  const action = actions.find(a => a.id === id);
+  if (action) {
+    actions.push({
+      id: Date.now(),
+      type: action.type,
+      name: action.name + " (複製)",
+      fromEmail: action.fromEmail,
+      toEmail: action.toEmail
+    });
+    saveActions();
+    renderActionList();
+    addLog("複製 Action", action.name);
+  }
+}
+function testAction(id) {
+  const action = actions.find(a => a.id === id);
+  const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
+  if (!toEmail) return;
+  addLog("測試 Action - 準備發送 Email", `Action: ${action.name} | 收件人: ${toEmail}`);
+  emailjs.send("FYP", "FYP", {
+    to_email: toEmail,
+    subject: "SNMP Trap Alert: " + action.name + " (測試)",
+    action_name: action.name,
+    action_type: action.type,
+    time: new Date().toLocaleString('zh-TW'),
+    message: "這是一封測試通知。\n\n" +
+             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "火焰狀態: " + document.getElementById('flameDisplay').textContent
+  }).then(() => {
+    addLog("Email 發送成功", `測試 Action: ${action.name} → ${toEmail}`);
+    alert("測試 Email 已發送到 " + toEmail);
+  }).catch((err) => {
+    addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
+    alert("發送失敗: " + (err.text || err));
+  });
+}
+
+// 其他功能
 function updateData() {
-    addLog("手動刷新資料");
-    
-    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
-        .then(r => r.json())
-        .then(d => {
-            const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
-            document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
-        });
-
-    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
-        .then(r => r.json())
-        .then(d => {
-            const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
-            document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
-        });
-
-    fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
-        .then(r => r.json())
-        .then(d => {
-            const flame = d.field3;
-            let text = '--';
-            let cls = 'flame-normal';
-            if (flame == 0) {
-                text = "Flame Detected! 🔥";
-                cls = 'flame-alert';
-            } else if (flame == 1) {
-                text = "No Flame ✅";
-                cls = 'flame-normal';
-            }
-            document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
-            document.getElementById('flameBox').className = 'data-box ' + cls;
-        });
-
-    document.getElementById('updateTime').textContent = `Last updated: ${new Date().toLocaleString('zh-TW')}`;
-
-    // 新增：更新健康分數
-    setTimeout(updateHealthScore, 800);   // 稍等數據更新完再算分數
+  addLog("手動刷新資料");
+  fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
+      document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
+    });
+  fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
+      document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
+    });
+  fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3/last.json?api_key=${readAPIKey}`)
+    .then(r => r.json())
+    .then(d => {
+      const flame = d.field3;
+      let text = '--';
+      let cls = 'flame-normal';
+      if (flame == 0) {
+        text = "Flame Detected! 🔥";
+        cls = 'flame-alert';
+      } else if (flame == 1) {
+        text = "No Flame ✅";
+        cls = 'flame-normal';
+      }
+      document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
+      document.getElementById('flameBox').className = 'data-box ' + cls;
+    });
+  document.getElementById('updateTime').textContent =
+    `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 }
-
-// 其他所有 function（Notifications Rule、Charts、Actions、Log 等）全部保持你原本的程式碼不變
+function controlLed(type, state) {
+  addLog("LED 控制", `type=${type}, state=${state}`);
+  fetch(`${espIP}/led?type=${type}&state=${state}`)
+    .then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.text();
+    })
+    .then(text => {
+      console.log("LED 控制成功:", text);
+    })
+    .catch(err => {
+      console.error("LED 控制失敗:", err);
+    });
+}
 
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.135";
-
+const espIP = "http://192.168.1.157"; // ← 改成你主 ESP32 的 IP
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
   updateData();
 }, 20000);
-
 updateData();
 </script>
 </body>
