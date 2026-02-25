@@ -236,6 +236,7 @@
 </div>
 
 <script>
+// ==================== 你原本的所有程式碼保持不變 ====================
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
@@ -385,7 +386,132 @@ function updateCharts() {
   addLog("手動刷新圖表資料");
 }
 
-// Actions, Log, Email Modal 等全部保留你原本的程式碼（這裡省略以避免過長，但你原本有的要保留）
+// Actions Modal
+function showActions() {
+  closeMenu();
+  document.getElementById("actionsModal").style.display = "block";
+  renderActionList();
+  addLog("開啟 Actions 面板");
+}
+function closeActionsModal() {
+  document.getElementById("actionsModal").style.display = "none";
+}
+
+// Log Modal
+function showLog() {
+  closeMenu();
+  renderLogList();
+  document.getElementById("logModal").style.display = "block";
+}
+function closeLogModal() {
+  document.getElementById("logModal").style.display = "none";
+}
+
+// Email settings modal
+function openEditEmailModal(id) {
+  document.getElementById("editEmailModal").style.display = "block";
+  window.currentEditId = id;
+  const action = actions.find(a => a.id === id);
+  document.getElementById("fromEmail").value = action.fromEmail || "";
+  document.getElementById("toEmail").value = action.toEmail || "";
+}
+function closeEditEmailModal() {
+  document.getElementById("editEmailModal").style.display = "none";
+}
+function saveActionEmail() {
+  const id = window.currentEditId;
+  const action = actions.find(a => a.id === id);
+  const from = document.getElementById("fromEmail").value;
+  const to = document.getElementById("toEmail").value;
+  action.fromEmail = from;
+  action.toEmail = to;
+  saveActions();
+  addLog("更新 Email 設定", `Action: ${action.name} | From: ${from} | To: ${to}`);
+  alert("Email 設定已儲存");
+  closeEditEmailModal();
+}
+
+// Actions management
+let actions = JSON.parse(localStorage.getItem("actions")) || [
+  { id: 1, type: "SNMP Trap", name: "SNMP Trap Action 1", fromEmail: "", toEmail: "" }
+];
+function saveActions() {
+  localStorage.setItem("actions", JSON.stringify(actions));
+}
+function renderActionList() {
+  let html = "";
+  actions.forEach(a => {
+    html += `
+      <tr class="action-row">
+        <td>${a.type}</td>
+        <td>${a.name}</td>
+        <td style="text-align:right;">
+          <button class="action-btn edit-btn" onclick="openEditEmailModal(${a.id})">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteAction(${a.id})">Delete</button>
+          <button class="action-btn duplicate-btn" onclick="duplicateAction(${a.id})">Duplicate</button>
+          <button class="action-btn test-btn" onclick="testAction(${a.id})">Test</button>
+        </td>
+      </tr>`;
+  });
+  document.getElementById("actionList").innerHTML = html;
+}
+function addSNMPTrap() {
+  const name = prompt("輸入 SNMP Trap Action 名稱:", "SNMP Trap Action " + (actions.length + 1));
+  if (name) {
+    const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
+    actions.push(newAction);
+    saveActions();
+    renderActionList();
+    addLog("新增 Action", name);
+  }
+}
+function deleteAction(id) {
+  if (confirm("確定要刪除嗎？")) {
+    const action = actions.find(a => a.id === id);
+    actions = actions.filter(a => a.id !== id);
+    saveActions();
+    renderActionList();
+    addLog("刪除 Action", action ? action.name : "未知");
+  }
+}
+function duplicateAction(id) {
+  const action = actions.find(a => a.id === id);
+  if (action) {
+    actions.push({
+      id: Date.now(),
+      type: action.type,
+      name: action.name + " (複製)",
+      fromEmail: action.fromEmail,
+      toEmail: action.toEmail
+    });
+    saveActions();
+    renderActionList();
+    addLog("複製 Action", action.name);
+  }
+}
+function testAction(id) {
+  const action = actions.find(a => a.id === id);
+  const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
+  if (!toEmail) return;
+  addLog("測試 Action - 準備發送 Email", `Action: ${action.name} | 收件人: ${toEmail}`);
+  emailjs.send("FYP", "FYP", {
+    to_email: toEmail,
+    subject: "SNMP Trap Alert: " + action.name + " (測試)",
+    action_name: action.name,
+    action_type: action.type,
+    time: new Date().toLocaleString('zh-TW'),
+    message: "這是一封測試通知。\n\n" +
+             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "火焰狀態: " + document.getElementById('flameDisplay').textContent
+  }).then(() => {
+    addLog("Email 發送成功", `測試 Action: ${action.name} → ${toEmail}`);
+    alert("測試 Email 已發送到 " + toEmail);
+  }).catch((err) => {
+    addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
+    alert("發送失敗: " + (err.text || err));
+  });
+}
 
 // ==================== 其他功能 ====================
 function updateData() {
@@ -418,24 +544,32 @@ function updateData() {
       document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
       document.getElementById('flameBox').className = 'data-box ' + cls;
     });
-  document.getElementById('updateTime').textContent = `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+  document.getElementById('updateTime').textContent =
+    `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 
-  // 更新機櫃健康分數
+  // 新增：更新機櫃健康分數
   updateHealthScore();
 }
 
 function controlLed(type, state) {
   addLog("LED 控制", `type=${type}, state=${state}`);
   fetch(`${espIP}/led?type=${type}&state=${state}`)
-    .then(response => response.text())
-    .then(text => console.log("LED 控制成功:", text))
-    .catch(err => console.error("LED 控制失敗:", err));
+    .then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.text();
+    })
+    .then(text => {
+      console.log("LED 控制成功:", text);
+    })
+    .catch(err => {
+      console.error("LED 控制失敗:", err);
+    });
 }
 
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.135";
+const espIP = "http://192.168.1.157";
 
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
@@ -444,7 +578,7 @@ setInterval(() => {
 
 updateData();
 
-// ==================== 機櫃健康分數 ====================
+// ==================== 機櫃健康分數計算 ====================
 function updateHealthScore() {
     const tempText = document.getElementById('tempDisplay').textContent;
     const humidText = document.getElementById('humidDisplay').textContent;
@@ -452,7 +586,7 @@ function updateHealthScore() {
 
     const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 25);
     const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 50);
-    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰");
+    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰") || flameText.includes("Flame");
 
     let score = 100;
 
