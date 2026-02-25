@@ -24,18 +24,11 @@
         .auto-mode { background: #2196f3; }
         .all-off { background: #757575; }
         .version { position: fixed; bottom: 10px; right: 20px; font-size: 0.8rem; color: #555; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
-        .sidebar {
-            height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0;
-            background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.8);
-        }
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0; background: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.8); }
         .sidebar a { padding: 15px 30px; font-size: 1.2rem; color: #ccc; display: block; cursor: pointer; }
         .sidebar a:hover { color: #f1f1f1; }
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; }
-        .actions-modal {
-            display: none; position: fixed; z-index: 20; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto;
-        }
+        .actions-modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .actions-content { background: #161b22; margin: 5% auto; width: 90%; max-width: 900px; border-radius: 12px; padding: 25px; }
         .actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .search-box { width: 60%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; }
@@ -64,31 +57,31 @@
         .chart-container { margin: 30px 0; }
         .chart-container h4 { color: #ff9800; margin-bottom: 10px; }
 
-        /* 新增：機櫃健康分數樣式 */
+        /* === 新增：機櫃健康分數樣式 === */
         .health-card {
             background: #222;
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
-            margin: 20px 0;
+            margin: 25px 0;
         }
         .health-score {
-            font-size: 72px;
+            font-size: 68px;
             font-weight: bold;
             margin: 10px 0;
         }
         .health-circle {
-            width: 140px;
-            height: 140px;
+            width: 130px;
+            height: 130px;
             margin: 15px auto;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 26px;
             color: white;
             font-weight: bold;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
         }
     </style>
 </head>
@@ -106,10 +99,10 @@
 
     <!-- 新增：機櫃健康分數 -->
     <div class="health-card">
-        <h3 style="color:#ff9800; margin:0 0 10px 0;">機櫃健康分數</h3>
+        <h3 style="color:#ff9800; margin:0 0 12px 0;">機櫃健康分數</h3>
         <div id="healthScore" class="health-score">---</div>
         <div id="healthCircle" class="health-circle">---</div>
-        <p id="healthMessage" style="margin:5px 0 0 0; font-size:18px;">計算中...</p>
+        <p id="healthMessage" style="margin:8px 0 0 0; font-size:17px;">計算中...</p>
     </div>
 
     <div class="time" id="updateTime">Last updated: loading...</div>
@@ -120,53 +113,60 @@
     </div>
 </div>
 
-<div class="version">Version: v2.7 - 2026/02/25</div>
+<div class="version">Version: v2.8 - 2026/02/25</div>
 
-<!-- Sidebar 及其他 Modal 保持不變（Notifications Rule, Actions, Log, Charts, Edit Email） -->
-<!-- （為了節省篇幅，這裡省略了你原本的 Sidebar 和所有 Modal，保持原樣即可） -->
+<!-- Sidebar 和所有 Modal 保持不變（以下全部保留你原本的） -->
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+    <a href="#" onclick="showNotificationsRule()">Notifications Rule</a>
+    <a href="#" onclick="showActions()">Actions</a>
+    <a href="#" onclick="showLog()">Log</a>
+    <a href="#" onclick="showCharts()">Charts</a>
+</div>
+
+<!-- Notifications Rule Modal、Actions Modal、Log Modal、Charts Modal、Edit Email Modal 全部保持你原本的程式碼 -->
+<!-- （這裡省略以節省篇幅，你原本有的就保留不動） -->
 
 <script>
-// EmailJS 初始化、Log 系統、Sidebar 控制、Notifications Rule、Charts 等全部保持不變
-// （你原本的程式碼這部分不變，直接保留即可）
+// ==================== 你原本的所有程式碼保持不變 ====================
+// EmailJS、Log 系統、Sidebar、Notifications Rule、Charts、Actions、Log 等全部不動
+// 只在 updateData() 最後加上健康分數更新
 
-// ==================== 新增：機櫃健康分數計算 ====================
-function updateHealthScore(temp, humid, flame) {
+// ==================== 新增健康分數計算函式 ====================
+function updateHealthScore() {
+    const tempText = document.getElementById('tempDisplay').textContent;
+    const humidText = document.getElementById('humidDisplay').textContent;
+    const flameText = document.getElementById('flameDisplay').textContent;
+
+    const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 25);
+    const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 50);
+    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰");
+
     let score = 100;
 
-    // 溫度分 (滿分40分) - 最佳範圍 18~27°C
-    let tempScore = 40;
-    if (temp < 18) tempScore -= (18 - temp) * 5;
-    if (temp > 27) tempScore -= (temp - 27) * 5;
-    score -= Math.max(0, 40 - tempScore);
+    // 溫度分 (最佳 18-27°C)
+    if (temp < 18) score -= (18 - temp) * 4;
+    if (temp > 27) score -= (temp - 27) * 4;
 
-    // 濕度分 (滿分30分) - 最佳範圍 40~60%
-    let humidScore = 30;
-    if (humid < 40) humidScore -= (40 - humid) * 3;
-    if (humid > 60) humidScore -= (humid - 60) * 3;
-    score -= Math.max(0, 30 - humidScore);
+    // 濕度分 (最佳 40-60%)
+    if (humid < 40) score -= (40 - humid) * 2;
+    if (humid > 60) score -= (humid - 60) * 2;
 
-    // 火焰分 (滿分20分)
-    if (flame === 1 || flame === "有火焰" || flame === "Flame Detected") {
-        score -= 20;
-    }
-
-    // 門狀態 (暫時沒有門感測器，先給滿分10分)
-    // 如果未來有門感測器，這裡可以改成扣分
+    // 火焰直接扣大分
+    if (hasFlame) score -= 40;
 
     score = Math.max(0, Math.min(100, Math.round(score)));
 
-    // 顏色與訊息
-    let color = "#4caf50";   // 綠
+    let color = "#4caf50";
     let message = "正常";
     if (score < 60) {
-        color = "#f44336";   // 紅
+        color = "#f44336";
         message = "危險！請立即檢查";
     } else if (score < 80) {
-        color = "#ff9800";   // 黃
+        color = "#ff9800";
         message = "注意！環境異常";
     }
 
-    // 更新畫面
     document.getElementById("healthScore").textContent = score;
     document.getElementById("healthScore").style.color = color;
     document.getElementById("healthCircle").style.background = color;
@@ -175,21 +175,21 @@ function updateHealthScore(temp, humid, flame) {
     document.getElementById("healthMessage").style.color = color;
 }
 
-// ==================== 更新資料時同時更新健康分數 ====================
+// ==================== 修改 updateData() ====================
 function updateData() {
     addLog("手動刷新資料");
-
+    
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
-            const temp = d.field1 ? Number(d.field1).toFixed(1) : 0;
+            const temp = d.field1 ? Number(d.field1).toFixed(1) : '--';
             document.getElementById('tempDisplay').textContent = `Temperature: ${temp} °C 🌡️`;
         });
 
     fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json?api_key=${readAPIKey}`)
         .then(r => r.json())
         .then(d => {
-            const humid = d.field2 ? Number(d.field2).toFixed(1) : 0;
+            const humid = d.field2 ? Number(d.field2).toFixed(1) : '--';
             document.getElementById('humidDisplay').textContent = `Humidity: ${humid} % 💧`;
         });
 
@@ -199,31 +199,24 @@ function updateData() {
             const flame = d.field3;
             let text = '--';
             let cls = 'flame-normal';
-            let flameValue = 0;
-
             if (flame == 0) {
                 text = "Flame Detected! 🔥";
                 cls = 'flame-alert';
-                flameValue = 1;
             } else if (flame == 1) {
                 text = "No Flame ✅";
                 cls = 'flame-normal';
-                flameValue = 0;
             }
             document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
             document.getElementById('flameBox').className = 'data-box ' + cls;
-
-            // 更新健康分數（這裡用最新數據）
-            const currentTemp = parseFloat(document.getElementById('tempDisplay').textContent.match(/\d+\.\d+/)?.[0] || 0);
-            const currentHumid = parseFloat(document.getElementById('humidDisplay').textContent.match(/\d+\.\d+/)?.[0] || 0);
-            updateHealthScore(currentTemp, currentHumid, flameValue);
         });
 
     document.getElementById('updateTime').textContent = `Last updated: ${new Date().toLocaleString('zh-TW')}`;
+
+    // 新增：更新健康分數
+    setTimeout(updateHealthScore, 800);   // 稍等數據更新完再算分數
 }
 
-// 其他程式碼（Notifications Rule、Charts、Actions、Log 等）保持不變
-// （你原本的程式碼從這裡開始一直到結尾都保留即可）
+// 其他所有 function（Notifications Rule、Charts、Actions、Log 等）全部保持你原本的程式碼不變
 
 // Auto update
 const channelID = 3252434;
@@ -235,7 +228,7 @@ setInterval(() => {
   updateData();
 }, 20000);
 
-updateData();   // 首次載入
+updateData();
 </script>
 </body>
 </html>
