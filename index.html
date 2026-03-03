@@ -104,7 +104,7 @@
     <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
     <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
 
-    <!-- 機櫃健康分數 -->
+    <!-- 機櫃健康分數（只加這一段） -->
     <div class="health-card">
         <h3 style="color:#ff9800; margin:0 0 15px 0;">機櫃健康分數</h3>
         <div id="healthScore" class="health-score">---</div>
@@ -236,7 +236,7 @@
 </div>
 
 <script>
-// ==================== 你原本的所有程式碼保持不變 ====================
+// ==================== 你原本的所有程式碼（完全不變） ====================
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
@@ -310,14 +310,12 @@ function saveNotificationsRule() {
   const humid = document.getElementById("humidThreshold").value;
   const email = document.getElementById("notifyEmail").value;
   const cooldown = document.getElementById("cooldownSeconds").value;
-
   notificationsRule = {
     tempThreshold: temp ? Number(temp) : null,
     humidThreshold: humid ? Number(humid) : null,
     notifyEmail: email,
     cooldownSeconds: cooldown ? Number(cooldown) : 300
   };
-
   localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
   addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
   alert("規則已儲存！");
@@ -329,15 +327,12 @@ setInterval(() => {
   if (notificationsRule.notifyEmail === "") return;
   const now = Date.now();
   if (now - lastNotificationTime < notificationsRule.cooldownSeconds * 1000) return;
-
   const tempText = document.getElementById('tempDisplay').textContent;
   const humidText = document.getElementById('humidDisplay').textContent;
   const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 0);
   const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 0);
-
   let triggered = false;
   let alertMsg = "";
-
   if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
     alertMsg += `溫度警報！目前 ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C\n`;
     triggered = true;
@@ -346,7 +341,6 @@ setInterval(() => {
     alertMsg += `濕度警報！目前 ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %\n`;
     triggered = true;
   }
-
   if (triggered) {
     sendNotificationEmail("環境監控警報", alertMsg);
     lastNotificationTime = now;
@@ -513,7 +507,7 @@ function testAction(id) {
   });
 }
 
-// ==================== 其他功能 ====================
+// ==================== 其他功能（完全不變） ====================
 function updateData() {
   addLog("手動刷新資料");
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
@@ -547,7 +541,7 @@ function updateData() {
   document.getElementById('updateTime').textContent =
     `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 
-  // 新增：更新機櫃健康分數
+  // 只加這一行來更新健康分數
   updateHealthScore();
 }
 
@@ -569,7 +563,7 @@ function controlLed(type, state) {
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.145";
+const espIP = "http://192.168.1.157";
 
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
@@ -578,7 +572,7 @@ setInterval(() => {
 
 updateData();
 
-// ==================== 機櫃健康分數計算 ====================
+// ==================== 機櫃健康分數 ====================
 function updateHealthScore() {
     const tempText = document.getElementById('tempDisplay').textContent;
     const humidText = document.getElementById('humidDisplay').textContent;
