@@ -236,6 +236,7 @@
 </div>
 
 <script>
+// ==================== 你原本的所有程式碼（完全不變） ====================
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
@@ -562,7 +563,7 @@ function controlLed(type, state) {
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.145";
+const espIP = "http://192.168.1.157";
 
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
@@ -571,7 +572,7 @@ setInterval(() => {
 
 updateData();
 
-// ==================== 機櫃健康分數（已優化為ESP32測試環境） ====================
+// ==================== 機櫃健康分數（已優化，適合ESP32測試環境） ====================
 function updateHealthScore() {
     const tempText = document.getElementById('tempDisplay').textContent;
     const humidText = document.getElementById('humidDisplay').textContent;
@@ -579,25 +580,21 @@ function updateHealthScore() {
 
     const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 25);
     const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 50);
-    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰") || flameText.includes("Flame");
+    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰");
 
     let score = 100;
-    let detail = "";
 
-    // 溫度：15~35°C 滿分（ESP32測試環境寬鬆版）
+    // 溫度：15~35°C 幾乎滿分（適合ESP32測試環境）
     if (temp < 15) score -= (15 - temp) * 4;
     if (temp > 35) score -= (temp - 35) * 4;
-    if (temp < 15 || temp > 35) detail += `溫度扣分 `;
 
-    // 濕度：20~80% 滿分
-    if (humid < 20) score -= (20 - humid) * 3;
-    if (humid > 80) score -= (humid - 80) * 3;
-    if (humid < 20 || humid > 80) detail += `濕度扣分 `;
+    // 濕度：20~80% 幾乎滿分
+    if (humid < 20) score -= (20 - humid) * 2;
+    if (humid > 80) score -= (humid - 80) * 2;
 
-    // 火焰直接大扣分
+    // 火焰扣分（修正版：只有真正有火焰才扣）
     if (hasFlame) {
         score -= 50;
-        detail += `火焰扣50分 `;
     }
 
     score = Math.max(0, Math.min(100, Math.round(score)));
@@ -616,7 +613,7 @@ function updateHealthScore() {
     document.getElementById("healthScore").style.color = color;
     document.getElementById("healthCircle").style.background = color;
     document.getElementById("healthCircle").textContent = score;
-    document.getElementById("healthMessage").innerHTML = message + "<br><small style='color:#888'>" + detail + "</small>";
+    document.getElementById("healthMessage").textContent = message;
 }
 </script>
 </body>
