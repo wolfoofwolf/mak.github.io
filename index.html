@@ -104,9 +104,9 @@
     <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
     <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
 
-    <!-- 機櫃健康分數（只加這一段） -->
+    <!-- 機櫃健康分數 -->
     <div class="health-card">
-        <h3 style="color:#ff9800; margin:0 0 15px 0;">機櫃健康分數</h3>
+        <h3 style="color:#ff9800; margin:0 0 15px 0;">Rack Health Score</h3>
         <div id="healthScore" class="health-score">---</div>
         <div id="healthCircle" class="health-circle">---</div>
         <p id="healthMessage" style="margin:8px 0 0 0; font-size:18px;">計算中...</p>
@@ -236,7 +236,6 @@
 </div>
 
 <script>
-// ==================== 你原本的所有程式碼（完全不變） ====================
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
@@ -507,7 +506,7 @@ function testAction(id) {
   });
 }
 
-// ==================== 其他功能（完全不變） ====================
+// ==================== 其他功能 ====================
 function updateData() {
   addLog("手動刷新資料");
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
@@ -541,7 +540,7 @@ function updateData() {
   document.getElementById('updateTime').textContent =
     `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 
-  // 只加這一行來更新健康分數
+  // 更新機櫃健康分數
   updateHealthScore();
 }
 
@@ -572,7 +571,7 @@ setInterval(() => {
 
 updateData();
 
-// ==================== 機櫃健康分數 ====================
+// ==================== 機櫃健康分數（已優化為ESP32測試環境） ====================
 function updateHealthScore() {
     const tempText = document.getElementById('tempDisplay').textContent;
     const humidText = document.getElementById('humidDisplay').textContent;
@@ -583,12 +582,23 @@ function updateHealthScore() {
     const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰") || flameText.includes("Flame");
 
     let score = 100;
+    let detail = "";
 
-    if (temp < 18) score -= (18 - temp) * 5;
-    if (temp > 27) score -= (temp - 27) * 5;
-    if (humid < 40) score -= (40 - humid) * 3;
-    if (humid > 60) score -= (humid - 60) * 3;
-    if (hasFlame) score -= 40;
+    // 溫度：15~35°C 滿分（ESP32測試環境寬鬆版）
+    if (temp < 15) score -= (15 - temp) * 4;
+    if (temp > 35) score -= (temp - 35) * 4;
+    if (temp < 15 || temp > 35) detail += `溫度扣分 `;
+
+    // 濕度：20~80% 滿分
+    if (humid < 20) score -= (20 - humid) * 3;
+    if (humid > 80) score -= (humid - 80) * 3;
+    if (humid < 20 || humid > 80) detail += `濕度扣分 `;
+
+    // 火焰直接大扣分
+    if (hasFlame) {
+        score -= 50;
+        detail += `火焰扣50分 `;
+    }
 
     score = Math.max(0, Math.min(100, Math.round(score)));
 
@@ -606,7 +616,7 @@ function updateHealthScore() {
     document.getElementById("healthScore").style.color = color;
     document.getElementById("healthCircle").style.background = color;
     document.getElementById("healthCircle").textContent = score;
-    document.getElementById("healthMessage").textContent = message;
+    document.getElementById("healthMessage").innerHTML = message + "<br><small style='color:#888'>" + detail + "</small>";
 }
 </script>
 </body>
