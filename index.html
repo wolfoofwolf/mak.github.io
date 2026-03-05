@@ -240,25 +240,6 @@
 // EmailJS 初始化
 emailjs.init("DesLsbj7IJqknmZFq");
 
-const espIP = "http://192.168.1.157";   // ←←← 改成你 ESP32 的 IP
-
-function liveUpdate() {
-    fetch(espIP + "/data")
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('tempDisplay').textContent = `Temperature: ${data.temperature} °C 🌡️`;
-            document.getElementById('humidDisplay').textContent = `Humidity: ${data.humidity} % 💧`;
-            const flame = data.flame;
-            let text = flame == 1 ? "Flame Detected! 🔥" : "No Flame ✅";
-            let cls = flame == 1 ? "flame-alert" : "flame-normal";
-            document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
-            document.getElementById('flameBox').className = 'data-box ' + cls;
-            updateHealthScore();
-            document.getElementById('updateTime').textContent = `Last updated: ${new Date().toLocaleString('zh-TW')}`;
-        })
-        .catch(() => console.log("即時更新失敗，使用 ThingSpeak 備用"));
-}
-
 // Log 系統
 let logEntries = JSON.parse(localStorage.getItem("systemLog")) || [];
 function addLog(action, details = "") {
@@ -582,7 +563,7 @@ function controlLed(type, state) {
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.1.196";
+const espIP = "http://192.168.1.145";
 
 setInterval(() => {
   addLog("自動刷新資料 (每 20 秒)");
