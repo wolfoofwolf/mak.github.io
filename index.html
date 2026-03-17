@@ -688,7 +688,16 @@ function showSecurityAlert() {
     notify.style.display = "block";
     setTimeout(() => { notify.style.display = "none"; }, 5000);
 }
-    
+
+// === 接收 Flask 陌生人警報（重要！）===
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('alert') && urlParams.get('alert') === 'stranger') {
+        showSecurityAlert();
+        // 清除參數，避免重複彈窗
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+};
 </script>
 
 <!-- 右下角通知彈窗 -->
