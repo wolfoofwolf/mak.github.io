@@ -690,16 +690,15 @@ function showSecurityAlert() {
     setTimeout(() => { notify.style.display = "none"; }, 5000);
 }
 
-// === 強制每 2 秒檢查 Flask 是否發來警報（解決 onload 不觸發問題）===
+// === 每1秒強制檢查 Flask 是否發來警報（最穩方案）===
 setInterval(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('alert') && urlParams.get('alert') === 'stranger') {
         showSecurityAlert();
-        // 清除參數，避免一直彈
+        console.log("✅ 收到 Flask 陌生人警報 → 已觸發彈窗");
         window.history.replaceState({}, document.title, window.location.pathname);
-        console.log("✅ Flask 警報已接收並觸發彈窗！");
     }
-}, 2000);
+}, 1000);
 </script>
 
 <!-- 右下角通知彈窗 -->
@@ -707,6 +706,6 @@ setInterval(() => {
     <strong>🚨 警報！</strong><br>
     <span id="notifyText">門被開啟 + 陌生人入侵！</span>
 </div>
-    
+   
 </body>
 </html>
