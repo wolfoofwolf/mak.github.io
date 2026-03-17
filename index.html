@@ -90,7 +90,37 @@
             font-weight: bold;
             box-shadow: 0 0 25px rgba(0,0,0,0.6);
         }
-    </style>
+
+/* 右下角通知彈窗 */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #b71c1c;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    z-index: 100;
+    display: none;
+    max-width: 320px;
+    animation: slideIn 0.4s;
+}
+@keyframes slideIn { 
+    from { transform: translateX(100%); } 
+    to { transform: translateX(0); } 
+}
+
+.security-content { 
+    background: #161b22; 
+    margin: 5% auto; 
+    width: 90%; 
+    max-width: 700px; 
+    border-radius: 12px; 
+    padding: 25px; 
+}
+
+</style>
 </head>
 <body>
 <div class="top-bar">
@@ -129,6 +159,7 @@
     <a href="#" onclick="showActions()">Actions</a>
     <a href="#" onclick="showLog()">Log</a>
     <a href="#" onclick="showCharts()">Charts</a>
+    <a href="#" onclick="showSecurity()">Security</a>
 </div>
 
 <!-- Notifications Rule Modal -->
@@ -232,6 +263,22 @@
             <button onclick="saveActionEmail()" style="flex: 1; background:#238636; padding:12px; border-radius:6px;">Save</button>
             <button onclick="closeEditEmailModal()" style="flex: 1; background:#f44336; padding:12px; border-radius:6px;">Cancel</button>
         </div>
+    </div>
+</div>
+
+<!-- Security Modal -->
+<div id="securityModal" class="actions-modal">
+    <div class="security-content">
+        <div class="actions-header">
+            <h2 style="margin:0;">Security 警報設定</h2>
+            <button onclick="closeSecurityModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <div class="input-group">
+            <label>陌生人警報冷卻時間 (秒)</label>
+            <input type="number" id="securityCooldown" value="60" min="10">
+            <small style="color:#888;">（避免連續觸發）</small>
+        </div>
+        <button onclick="saveSecuritySetting()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存設定</button>
     </div>
 </div>
 
@@ -615,6 +662,40 @@ function updateHealthScore() {
     document.getElementById("healthCircle").textContent = score;
     document.getElementById("healthMessage").textContent = message;
 }
+
+// ==================== Security 新功能 ====================
+let securityCooldown = 60;
+
+function showSecurity() {
+    closeMenu();
+    document.getElementById("securityModal").style.display = "block";
+    document.getElementById("securityCooldown").value = securityCooldown;
+}
+
+function closeSecurityModal() {
+    document.getElementById("securityModal").style.display = "none";
+}
+
+function saveSecuritySetting() {
+    securityCooldown = parseInt(document.getElementById("securityCooldown").value) || 60;
+    alert("Security 冷卻時間已設定為 " + securityCooldown + " 秒");
+    closeSecurityModal();
+}
+
+function showSecurityAlert() {
+    const notify = document.getElementById("securityNotification");
+    document.getElementById("notifyText").innerHTML = "門被開啟 + 陌生人入侵！";
+    notify.style.display = "block";
+    setTimeout(() => { notify.style.display = "none"; }, 5000);
+}
+    
 </script>
+
+<!-- 右下角通知彈窗 -->
+<div id="securityNotification" class="notification">
+    <strong>🚨 警報！</strong><br>
+    <span id="notifyText">門被開啟 + 陌生人入侵！</span>
+</div>
+    
 </body>
 </html>
