@@ -145,6 +145,7 @@
     <div class="time" id="updateTime">Last updated: loading...</div>
         <div class="buttons">
         <button onclick="updateData()">Refresh Data</button>
+        <button onclick="showLatestStrangerPhoto()" style="background:#10b981;">📸 查看最新陌生人照片</button>
         <button class="auto-mode" onclick="controlLed('auto', 1)">Restore Auto Mode</button>
         <button class="all-off" onclick="controlLed('all', 0)">All Light OFF</button>
         <button onclick="showSecurityAlert()" style="background:#b71c1c;">🧪 Test Security Alert</button>
@@ -732,6 +733,13 @@ setInterval(() => {
         })
         .catch(err => console.error("❌ 讀取失敗", err));
 }, 1000);
+
+function showLatestStrangerPhoto() {
+    document.getElementById("strangerPhotoModal").style.display = "block";
+}
+function closeStrangerPhotoModal() {
+    document.getElementById("strangerPhotoModal").style.display = "none";
+}
     
 </script>
 
@@ -739,6 +747,18 @@ setInterval(() => {
 <div id="securityNotification" class="notification">
     <strong>🚨 警報！</strong><br>
     <span id="notifyText">門被開啟 + 陌生人入侵！</span>
+</div>
+
+<!-- 陌生人照片 Modal -->
+<div id="strangerPhotoModal" class="actions-modal">
+    <div class="actions-content" style="max-width: 700px; text-align:center;">
+        <div class="actions-header">
+            <h2 style="margin:0;">最新陌生人照片</h2>
+            <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
+        </div>
+        <img id="strangerPhotoImg" src="http://192.168.1.152/latest_stranger.jpg" style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
+        <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
+    </div>
 </div>
    
 </body>
