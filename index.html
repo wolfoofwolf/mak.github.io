@@ -705,40 +705,40 @@ setInterval(() => {
     }
 }, 300);
 
-// ==================== ThingSpeak 旗標接收（最終版 - 直接讀取 input 值） ====================
+// ==================== ThingSpeak 旗標接收（防 delay 最終版） ====================
 let lastAlertTime = 0;
-
 setInterval(() => {
-    // 每次都直接從 input 讀取最新冷卻時間
-    const cooldownInput = document.getElementById("securityCooldown");
-    const cooldownSeconds = parseInt(cooldownInput ? cooldownInput.value : 60) || 60;
-    
-    console.log(`🔧 目前冷卻設定 = ${cooldownSeconds} 秒`);
-
-    fetch(`https://api.thingspeak.com/channels/3252434/fields/4/last.json?api_key=PKQNQOPCZYREXB6C`)
+    fetch(`https://api.thingspeak.com/channels/3252434/fields/4/last.json?api_key=PKQNQOPCZYREXB6C&_t=${Date.now()}`)
         .then(r => r.json())
         .then(d => {
-            if (d.field4 == "1" || d.field4 == 1) {
+            const value = parseFloat(d.field4 || 0);
+            console.log(`📡 ThingSpeak field4 = ${value}`);
+
+            if (value === 1) {
                 const now = Date.now();
+                const cooldownSeconds = parseInt(document.getElementById("securityCooldown").value) || 60;
+
                 if (now - lastAlertTime > cooldownSeconds * 1000) {
-                    console.log("🎉 冷卻時間已過 → 彈窗！");
+                    console.log("🎉 警報觸發！彈窗 + 清除旗標");
                     showSecurityAlert();
                     lastAlertTime = now;
+
+                    // 立刻清除旗標（解決 delay）
                     fetch(`https://api.thingspeak.com/update?api_key=HOXYIFRJSXMG6L4L&field4=0`);
-                } else {
-                    const remaining = Math.round((cooldownSeconds * 1000 - (now - lastAlertTime)) / 1000);
-                    console.log(`⏳ 冷卻中... 剩餘 ${remaining} 秒`);
                 }
             }
         })
         .catch(err => console.error("❌ 讀取失敗", err));
-}, 1000);
+}, 800);  // 每 0.8 秒檢查一次（更快更穩）
 
 function showLatestStrangerPhoto() {
     const img = document.getElementById("strangerPhotoImg");
-    // 加上時間戳強制刷新
-    img.src = "http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now();
+    img.src = "http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now();  // 強制刷新
     document.getElementById("strangerPhotoModal").style.display = "block";
+}
+
+function closeStrangerPhotoModal() {
+    document.getElementById("strangerPhotoModal").style.display = "none";
 }
     
 </script>
