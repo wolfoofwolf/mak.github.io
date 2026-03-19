@@ -690,15 +690,17 @@ function showSecurityAlert() {
     setTimeout(() => { notify.style.display = "none"; }, 5000);
 }
 
-// === 每1秒強制檢查 Flask 是否發來警報（最穩方案）===
+// ==================== 加強版接收 Flask 陌生人警報（每 0.5 秒檢查） ====================
 setInterval(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('alert') && urlParams.get('alert') === 'stranger') {
         showSecurityAlert();
-        console.log("✅ 收到 Flask 陌生人警報 → 已觸發彈窗");
+        console.log("✅ 已成功抓到 Flask 警報 → 彈窗觸發！");
         window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        console.log("🔍 目前 URL 沒有警報參數（正常輪詢中...）");
     }
-}, 1000);
+}, 500);  // 每 0.5 秒檢查一次
 </script>
 
 <!-- 右下角通知彈窗 -->
