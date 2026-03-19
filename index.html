@@ -704,26 +704,34 @@ setInterval(() => {
     }
 }, 300);
 
-// ==================== ThingSpeak 旗標接收（最終加強版 + 錯誤處理） ====================
+// ==================== ThingSpeak 旗標接收（最終版 + 冷卻時間真正生效） ====================
+let lastAlertTime = 0;   // 記錄上次彈窗時間
+
 setInterval(() => {
     fetch(`https://api.thingspeak.com/channels/3252434/fields/4/last.json?api_key=PKQNQOPCZYREXB6C`)
         .then(r => r.json())
         .then(d => {
-            console.log("📡 ThingSpeak 讀取結果 field4 =", d.field4);
-            
-            if (d.field4 == "1" || d.field4 == 1 || parseFloat(d.field4) === 1) {
-                console.log("🎉 成功抓到警報旗標！觸發彈窗");
-                showSecurityAlert();
-                // 清除旗標
-                fetch(`https://api.thingspeak.com/update?api_key=HOXYIFRJSXMG6L4L&field4=0`);
-            } else {
-                console.log("⏳ field4 還不是 1（目前值：", d.field4, "）");
+            const value = d.field4;
+            console.log(`📡 ThingSpeak field4 = ${value}`);
+
+            if ((value === "1" || value === 1 || parseFloat(value) === 1)) {
+                const now = Date.now();
+                const cooldownMs = securityCooldown * 1000;
+
+                if (now - lastAlertTime > cooldownMs) {
+                    console.log(`🎉 抓到警報 + 已超過冷卻時間 ${securityCooldown} 秒 → 彈窗！`);
+                    showSecurityAlert();
+                    lastAlertTime = now;
+                    
+                    // 清除旗標
+                    fetch(`https://api.thingspeak.com/update?api_key=HOXYIFRJSXMG6L4L&field4=0`);
+                } else {
+                    console.log(`⏳ 還在冷卻時間內（剩餘 ${Math.round((cooldownMs - (now - lastAlertTime))/1000)} 秒）`);
+                }
             }
         })
-        .catch(err => {
-            console.error("❌ ThingSpeak 讀取失敗:", err);
-        });
-}, 2000);
+        .catch(err => console.error("❌ ThingSpeak 讀取失敗:", err));
+}, 1000);
     
 </script>
 
