@@ -735,10 +735,10 @@ setInterval(() => {
 }, 1000);
 
 function showLatestStrangerPhoto() {
+    const img = document.getElementById("strangerPhotoImg");
+    // 加上時間戳強制刷新
+    img.src = "http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now();
     document.getElementById("strangerPhotoModal").style.display = "block";
-}
-function closeStrangerPhotoModal() {
-    document.getElementById("strangerPhotoModal").style.display = "none";
 }
     
 </script>
@@ -756,7 +756,9 @@ function closeStrangerPhotoModal() {
             <h2 style="margin:0;">最新陌生人照片</h2>
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
-        <img id="strangerPhotoImg" src="http://192.168.1.152/latest_stranger.jpg" style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
+        <img id="strangerPhotoImg" 
+             src="http://192.168.1.152:5000/latest_stranger.jpg" 
+             style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
         <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
     </div>
 </div>
