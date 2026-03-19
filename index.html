@@ -731,9 +731,23 @@ setInterval(() => {
         .catch(err => console.error("❌ 讀取失敗", err));
 }, 800);  // 每 0.8 秒檢查一次（更快更穩）
 
+// ==================== 接收 Base64 照片（純 ThingSpeak） ====================
+function loadStrangerPhoto() {
+    fetch(`https://api.thingspeak.com/channels/3252434/fields/5/last.json?api_key=PKQNQOPCZYREXB6C&_t=${Date.now()}`)
+        .then(r => r.json())
+        .then(d => {
+            if (d.field5 && d.field5.length > 100) {
+                const img = document.getElementById("strangerPhotoImg");
+                img.src = "data:image/jpeg;base64," + d.field5;
+                // 顯示後自動清除 field5
+                fetch(`https://api.thingspeak.com/update?api_key=HOXYIFRJSXMG6L4L&field5=0`);
+            }
+        });
+}
+
 function showLatestStrangerPhoto() {
     const img = document.getElementById("strangerPhotoImg");
-    img.src = "http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now();  // 強制刷新
+    img.src = "http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now();
     document.getElementById("strangerPhotoModal").style.display = "block";
 }
 
@@ -757,7 +771,7 @@ function closeStrangerPhotoModal() {
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
         <img id="strangerPhotoImg" 
-             src="http://192.168.1.152:5000/latest_stranger.jpg" 
+             src="http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now()
              style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
         <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
     </div>
