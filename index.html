@@ -746,9 +746,8 @@ function loadStrangerPhoto() {
 }
 
 function showLatestStrangerPhoto() {
-    const img = document.getElementById("strangerPhotoImg");
-    img.src = "http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now();
     document.getElementById("strangerPhotoModal").style.display = "block";
+    loadStrangerPhoto();
 }
 
 function closeStrangerPhotoModal() {
@@ -770,9 +769,7 @@ function closeStrangerPhotoModal() {
             <h2 style="margin:0;">最新陌生人照片</h2>
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
-        <img id="strangerPhotoImg" 
-             src="http://192.168.1.152:5000/latest_stranger.jpg?t=" + Date.now()
-             style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
+        <img id="strangerPhotoImg" style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
         <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
     </div>
 </div>
