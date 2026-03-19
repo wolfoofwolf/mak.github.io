@@ -703,6 +703,28 @@ setInterval(() => {
         console.log("⏳ 目前沒有正確 Key（正常輪詢中...）");
     }
 }, 300);
+
+// ==================== ThingSpeak 旗標接收（最終加強版 + 錯誤處理） ====================
+setInterval(() => {
+    fetch(`https://api.thingspeak.com/channels/3252434/fields/4/last.json?api_key=PKQNQOPCZYREXB6C`)
+        .then(r => r.json())
+        .then(d => {
+            console.log("📡 ThingSpeak 讀取結果 field4 =", d.field4);
+            
+            if (d.field4 == "1" || d.field4 == 1 || parseFloat(d.field4) === 1) {
+                console.log("🎉 成功抓到警報旗標！觸發彈窗");
+                showSecurityAlert();
+                // 清除旗標
+                fetch(`https://api.thingspeak.com/update?api_key=HOXYIFRJSXMG6L4L&field4=0`);
+            } else {
+                console.log("⏳ field4 還不是 1（目前值：", d.field4, "）");
+            }
+        })
+        .catch(err => {
+            console.error("❌ ThingSpeak 讀取失敗:", err);
+        });
+}, 2000);
+    
 </script>
 
 <!-- 右下角通知彈窗 -->
