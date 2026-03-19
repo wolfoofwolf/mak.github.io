@@ -690,13 +690,13 @@ function showSecurityAlert() {
     setTimeout(() => { notify.style.display = "none"; }, 5000);
 }
 
-// ==================== Key 機制接收 Flask 陌生人警報（超穩版） ====================
+// ==================== 最終加強版接收 Flask 陌生人警報（每 0.3 秒檢查 + Key） ====================
 setInterval(() => {
     const urlParams = new URLSearchParams(window.location.search);
     console.log("🔍 檢查中... alert=" + urlParams.get('alert') + " key=" + urlParams.get('key'));
 
     if (urlParams.has('alert') && urlParams.get('alert') === 'stranger' && urlParams.get('key') === 'maksecret123') {
-        console.log("🎉 成功抓到正確 Key + 警報！");
+        console.log("🎉 抓到正確 Key + 警報！");
         showSecurityAlert();
         window.history.replaceState({}, document.title, window.location.pathname);
     } else {
