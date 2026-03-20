@@ -739,11 +739,12 @@ function loadStrangerPhoto() {
             if (d.field5 && d.field5.length > 100) {
                 const img = document.getElementById("strangerPhotoImg");
                 img.src = "data:image/jpeg;base64," + d.field5;
-                console.log("✅ 照片已從新 channel 載入！");
+                console.log("✅ 照片已從新 channel 載入成功！");
             } else {
-                console.log("⏳ 還沒照片");
+                console.log("⏳ 還沒收到照片");
             }
-        });
+        })
+        .catch(err => console.error("❌ 載入失敗", err));
 }
 
 function showLatestStrangerPhoto() {
