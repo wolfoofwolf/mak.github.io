@@ -733,14 +733,15 @@ setInterval(() => {
 
 // ==================== 接收 Base64 照片（純 ThingSpeak） ====================
 function loadStrangerPhoto() {
-    fetch(`https://api.thingspeak.com/channels/3252434/fields/5/last.json?api_key=PKQNQOPCZYREXB6C&_t=${Date.now()}`)
+    fetch(`https://api.thingspeak.com/channels/3306346/fields/5/last.json?api_key=EXBJVMCV1O75A8MJ&_t=${Date.now()}`)
         .then(r => r.json())
         .then(d => {
             if (d.field5 && d.field5.length > 100) {
                 const img = document.getElementById("strangerPhotoImg");
                 img.src = "data:image/jpeg;base64," + d.field5;
-                // 顯示後自動清除 field5
-                fetch(`https://api.thingspeak.com/update?api_key=HOXYIFRJSXMG6L4L&field5=0`);
+                console.log("✅ 照片已從新 channel 載入！");
+            } else {
+                console.log("⏳ 還沒照片");
             }
         });
 }
@@ -752,6 +753,10 @@ function showLatestStrangerPhoto() {
 
 function closeStrangerPhotoModal() {
     document.getElementById("strangerPhotoModal").style.display = "none";
+}
+
+function reloadStrangerPhoto() {
+    loadStrangerPhoto();
 }
     
 </script>
@@ -770,6 +775,7 @@ function closeStrangerPhotoModal() {
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
         <img id="strangerPhotoImg" style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
+        <button onclick="reloadStrangerPhoto()" style="margin-top:10px; background:#10b981; padding:8px 16px;">Reload Photo</button>
         <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
     </div>
 </div>
