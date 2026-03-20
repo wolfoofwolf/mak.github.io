@@ -672,6 +672,7 @@ function showSecurity() {
     closeMenu();
     document.getElementById("securityModal").style.display = "block";
     document.getElementById("securityCooldown").value = securityCooldown;
+    addLog("開啟 Security 警報設定", "調整陌生人警報冷卻時間");
 }
 
 function closeSecurityModal() {
@@ -682,6 +683,7 @@ function saveSecuritySetting() {
     securityCooldown = parseInt(document.getElementById("securityCooldown").value) || 60;
     alert("Security 冷卻時間已設定為 " + securityCooldown + " 秒");
     closeSecurityModal();
+    addLog("儲存 Security 設定", `冷卻時間更新為 ${securityCooldown} 秒`);
 }
 
 function showSecurityAlert() {
@@ -689,6 +691,7 @@ function showSecurityAlert() {
     document.getElementById("notifyText").innerHTML = "門被開啟 + 陌生人入侵！";
     notify.style.display = "block";
     setTimeout(() => { notify.style.display = "none"; }, 5000);
+    addLog("🚨 Security 警報觸發", "右下角通知彈窗已顯示");
 }
 
 // ==================== 最終加強版接收 Flask 陌生人警報（每 0.3 秒檢查 + Key） ====================
@@ -761,11 +764,13 @@ function reloadStrangerPhoto() {
     console.log("🔄 Reload Photo 被點擊");
     const img = document.getElementById("strangerPhotoImg");
     img.src = "http://192.168.1.147:5000/latest_stranger.jpg?t=" + Date.now();
+    addLog("🔄 重新載入陌生人照片", "正在從 Flask 伺服器更新最新影像");
 }
 
 function showLatestStrangerPhoto() {
     document.getElementById("strangerPhotoModal").style.display = "block";
     reloadStrangerPhoto();
+    addLog("📸 開啟 Latest Stranger 照片", "查看 Flask 剛拍到的陌生人入侵影像");
 }
 
 function closeStrangerPhotoModal() {
