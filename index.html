@@ -747,45 +747,43 @@ setInterval(() => {
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
         <img id="strangerPhotoImg" 
-             style="max-width:100%; border:3px solid #b71c1c; border-radius:8px; background:#000; min-height:300px;">
+             style="max-width:100%; border:3px solid #b71c1c; border-radius:8px; background:#000; min-height:320px;">
         <button onclick="reloadStrangerPhoto()" 
-                style="margin-top:15px; background:#4caf50; padding:10px 24px; border:none; border-radius:6px; color:white; font-weight:bold;">
+                style="margin-top:15px; background:#4caf50; padding:12px 28px; border:none; border-radius:6px; color:white; font-weight:bold;">
             🔄 Reload Photo
         </button>
-        <p style="color:#888; margin-top:15px;">這是 Flask 剛拍到的最新陌生人照片</p>
+        <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
     </div>
 </div>
 
 <script>
-// ==================== 照片顯示核心函式（最終加強版） ====================
+// ==================== 照片顯示核心函式（終極防損壞版） ====================
 function reloadStrangerPhoto() {
     console.log("🔄 開始載入最新陌生人照片...");
     const img = document.getElementById("strangerPhotoImg");
-    img.src = "https://via.placeholder.com/600x400/222/fff?text=Loading..."; // loading 狀態
+    img.src = "https://via.placeholder.com/600x400/222/fff?text=Loading+Photo...";
 
     fetch(`https://api.thingspeak.com/channels/3306346/fields/1/last.json?api_key=EXBJVMCV1O75A8MJ&_t=${Date.now()}`)
-        .then(r => {
-            if (!r.ok) throw new Error("HTTP " + r.status);
-            return r.json();
-        })
+        .then(r => r.json())
         .then(d => {
-            if (d.field1 && d.field1.length > 100) {
-                img.src = "data:image/jpeg;base64," + d.field1;
-                console.log("✅ 照片已成功顯示！Base64 長度:", d.field1.length);
+            if (d.field1 && d.field1.length > 200) {
+                let cleanBase64 = d.field1.replace(/\s/g, '');  // 清除換行
+                img.src = "data:image/jpeg;base64," + cleanBase64;
+                console.log("✅ 照片載入成功！Base64 長度:", cleanBase64.length);
             } else {
-                console.warn("⚠️ Field1 沒有有效照片");
+                console.warn("⚠️ Field1 資料無效");
                 img.src = "https://via.placeholder.com/600x400?text=No+Photo+Yet";
             }
         })
         .catch(err => {
-            console.error("❌ 載入照片失敗:", err);
+            console.error("❌ 載入失敗:", err);
             img.src = "https://via.placeholder.com/600x400/ff0000/fff?text=Load+Failed";
         });
 }
 
 function showLatestStrangerPhoto() {
     document.getElementById("strangerPhotoModal").style.display = "block";
-    reloadStrangerPhoto();   // 開啟就立刻載入
+    reloadStrangerPhoto();
 }
 
 function closeStrangerPhotoModal() {
