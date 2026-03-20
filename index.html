@@ -732,22 +732,31 @@ setInterval(() => {
 }, 800);  // 每 0.8 秒檢查一次（更快更穩）
 
 // ==================== 接收 Base64 照片（純 ThingSpeak） ====================
+// ==================== 接收 Base64 照片（新 channel + 加強 debug） ====================
 function loadStrangerPhoto() {
+    console.log("📡 正在抓新 channel field5...");
     fetch(`https://api.thingspeak.com/channels/3306346/fields/5/last.json?api_key=EXBJVMCV1O75A8MJ&_t=${Date.now()}`)
         .then(r => r.json())
         .then(d => {
-            if (d.field5 && d.field5.length > 100) {
-                const img = document.getElementById("strangerPhotoImg");
-                img.src = "data:image/jpeg;base64," + d.field5;
-                console.log("✅ 照片已從新 channel 載入成功！");
+            console.log("📥 收到回應:", d);
+            if (d.field5) {
+                console.log(`✅ 抓到 field5！長度 = ${d.field5.length} 字元`);
+                if (d.field5.length > 100) {
+                    const img = document.getElementById("strangerPhotoImg");
+                    img.src = "data:image/jpeg;base64," + d.field5;
+                    console.log("🎉 照片已成功顯示在 modal！");
+                } else {
+                    console.log("⚠️ field5 太短，無法顯示");
+                }
             } else {
-                console.log("⏳ 還沒收到照片");
+                console.log("❌ 沒有 field5 資料");
             }
         })
-        .catch(err => console.error("❌ 載入失敗", err));
+        .catch(err => console.error("❌ fetch 錯誤:", err));
 }
 
 function showLatestStrangerPhoto() {
+    console.log("🖼️ showLatestStrangerPhoto 被呼叫");
     document.getElementById("strangerPhotoModal").style.display = "block";
     loadStrangerPhoto();
 }
@@ -757,6 +766,7 @@ function closeStrangerPhotoModal() {
 }
 
 function reloadStrangerPhoto() {
+    console.log("🔄 Reload Photo 被點擊");
     loadStrangerPhoto();
 }
     
