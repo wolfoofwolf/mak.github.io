@@ -730,40 +730,6 @@ setInterval(() => {
         })
         .catch(err => console.error("❌ 讀取失敗", err));
 }, 800);  // 每 0.8 秒檢查一次（更快更穩）
-
-
-// ==================== 接收 Base64 照片（改用 Field 1） ====================
-function loadStrangerPhoto() {
-    console.log("🔄 正在抓新 channel Field 1...");
-    fetch(`https://api.thingspeak.com/channels/3306346/fields/1/last.json?api_key=EXBJVMCV1O75A8MJ&_t=${Date.now()}`)
-        .then(r => r.json())
-        .then(d => {
-            console.log("📥 收到 field1 資料:", d);
-            if (d.field1 && d.field1.length > 100) {
-                const img = document.getElementById("strangerPhotoImg");
-                img.src = "data:image/jpeg;base64," + d.field1;
-                console.log("🎉 照片已成功顯示！");
-            } else {
-                console.log("⚠️ 還沒收到照片");
-            }
-        })
-        .catch(err => console.error("❌ fetch 錯誤", err));
-}
-
-function showLatestStrangerPhoto() {
-    console.log("🖼️ showLatestStrangerPhoto 被點擊");
-    document.getElementById("strangerPhotoModal").style.display = "block";
-    loadStrangerPhoto();
-}
-
-function closeStrangerPhotoModal() {
-    document.getElementById("strangerPhotoModal").style.display = "none";
-}
-
-function reloadStrangerPhoto() {
-    console.log("🔄 Reload Photo 被點擊");
-    loadStrangerPhoto();
-}
     
 </script>
 
@@ -773,18 +739,59 @@ function reloadStrangerPhoto() {
     <span id="notifyText">門被開啟 + 陌生人入侵！</span>
 </div>
 
-<!-- 陌生人照片 Modal -->
+<!-- ==================== 陌生人照片 Modal ==================== -->
 <div id="strangerPhotoModal" class="actions-modal">
     <div class="actions-content" style="max-width: 700px; text-align:center;">
         <div class="actions-header">
             <h2 style="margin:0;">最新陌生人照片</h2>
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
-        <img id="strangerPhotoImg" style="max-width:100%; border:3px solid #b71c1c; border-radius:8px;">
-        <button onclick="reloadStrangerPhoto()" style="margin-top:10px; background:#10b981; padding:8px 16px;">Reload Photo</button>
-        <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
+        <img id="strangerPhotoImg" 
+             style="max-width:100%; border:3px solid #b71c1c; border-radius:8px; background:#000; min-height:300px;">
+        <button onclick="reloadStrangerPhoto()" 
+                style="margin-top:15px; background:#4caf50; padding:10px 24px; border:none; border-radius:6px; color:white; font-weight:bold;">
+            🔄 Reload Photo
+        </button>
+        <p style="color:#888; margin-top:15px;">這是 Flask 剛拍到的最新陌生人照片</p>
     </div>
 </div>
+
+<script>
+// ==================== 照片顯示核心函式（最終加強版） ====================
+function reloadStrangerPhoto() {
+    console.log("🔄 開始載入最新陌生人照片...");
+    const img = document.getElementById("strangerPhotoImg");
+    img.src = "https://via.placeholder.com/600x400/222/fff?text=Loading..."; // loading 狀態
+
+    fetch(`https://api.thingspeak.com/channels/3306346/fields/1/last.json?api_key=EXBJVMCV1O75A8MJ&_t=${Date.now()}`)
+        .then(r => {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.json();
+        })
+        .then(d => {
+            if (d.field1 && d.field1.length > 100) {
+                img.src = "data:image/jpeg;base64," + d.field1;
+                console.log("✅ 照片已成功顯示！Base64 長度:", d.field1.length);
+            } else {
+                console.warn("⚠️ Field1 沒有有效照片");
+                img.src = "https://via.placeholder.com/600x400?text=No+Photo+Yet";
+            }
+        })
+        .catch(err => {
+            console.error("❌ 載入照片失敗:", err);
+            img.src = "https://via.placeholder.com/600x400/ff0000/fff?text=Load+Failed";
+        });
+}
+
+function showLatestStrangerPhoto() {
+    document.getElementById("strangerPhotoModal").style.display = "block";
+    reloadStrangerPhoto();   // 開啟就立刻載入
+}
+
+function closeStrangerPhotoModal() {
+    document.getElementById("strangerPhotoModal").style.display = "none";
+}
+</script>
    
 </body>
 </html>
