@@ -739,7 +739,7 @@ setInterval(() => {
     <span id="notifyText">門被開啟 + 陌生人入侵！</span>
 </div>
 
-<!-- ==================== 陌生人照片 Modal ==================== -->
+<!-- ==================== 最新陌生人照片 Modal ==================== -->
 <div id="strangerPhotoModal" class="actions-modal">
     <div class="actions-content" style="max-width: 700px; text-align:center;">
         <div class="actions-header">
@@ -757,28 +757,10 @@ setInterval(() => {
 </div>
 
 <script>
-// ==================== 照片顯示核心函式（終極防損壞版） ====================
 function reloadStrangerPhoto() {
-    console.log("🔄 開始載入最新陌生人照片...");
+    console.log("🔄 Reload Photo 被點擊");
     const img = document.getElementById("strangerPhotoImg");
-    img.src = "https://via.placeholder.com/600x400/222/fff?text=Loading+Photo...";
-
-    fetch(`https://api.thingspeak.com/channels/3306346/fields/1/last.json?api_key=EXBJVMCV1O75A8MJ&_t=${Date.now()}`)
-        .then(r => r.json())
-        .then(d => {
-            if (d.field1 && d.field1.length > 200) {
-                let cleanBase64 = d.field1.replace(/\s/g, '');  // 清除換行
-                img.src = "data:image/jpeg;base64," + cleanBase64;
-                console.log("✅ 照片載入成功！Base64 長度:", cleanBase64.length);
-            } else {
-                console.warn("⚠️ Field1 資料無效");
-                img.src = "https://via.placeholder.com/600x400?text=No+Photo+Yet";
-            }
-        })
-        .catch(err => {
-            console.error("❌ 載入失敗:", err);
-            img.src = "https://via.placeholder.com/600x400/ff0000/fff?text=Load+Failed";
-        });
+    img.src = "http://192.168.1.148:5000/latest_stranger.jpg?t=" + Date.now();
 }
 
 function showLatestStrangerPhoto() {
