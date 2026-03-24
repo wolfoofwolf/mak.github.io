@@ -176,8 +176,8 @@
             <input type="number" id="tempThreshold" placeholder="例如 30" step="0.1">
         </div>
         <div class="input-group">
-            <label>濕度低於 (%) 時通知</label>
-            <input type="number" id="humidThreshold" placeholder="例如 40" step="0.1">
+            <label>濕度高於 (%) 時通知</label>
+            <input type="number" id="humidThreshold" placeholder="例如 70" step="0.1">
         </div>
         <div class="input-group">
             <label>通知 Email</label>
@@ -366,7 +366,7 @@ function saveNotificationsRule() {
     cooldownSeconds: cooldown ? Number(cooldown) : 300
   };
   localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
-  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 < ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
+  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 > ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
   alert("規則已儲存！");
   closeNotificationsRuleModal();
 }
@@ -386,10 +386,10 @@ setInterval(() => {
     alertMsg += `溫度警報！目前 ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C\n`;
     triggered = true;
   }
-  if (notificationsRule.humidThreshold && humid < notificationsRule.humidThreshold) {
-    alertMsg += `濕度警報！目前 ${humid} %，已低於設定值 ${notificationsRule.humidThreshold} %\n`;
+if (notificationsRule.humidThreshold && humid > notificationsRule.humidThreshold) {
+    alertMsg += `濕度警報！目前 ${humid} %，已高於設定值 ${notificationsRule.humidThreshold} %\n`;
     triggered = true;
-  }
+}
   if (triggered) {
     sendNotificationEmail("環境監控警報", alertMsg);
     lastNotificationTime = now;
