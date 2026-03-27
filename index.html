@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>溫濕度與火焰監控系統</title>
+    <title>Rack Safety Monitoring System</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body { margin: 0; padding: 0; font-family: system-ui, sans-serif; background: #111; color: #eee; min-height: 100vh; }
@@ -64,7 +64,7 @@
         .chart-container { margin: 30px 0; }
         .chart-container h4 { color: #ff9800; margin-bottom: 10px; }
 
-        /* 機櫃健康分數樣式 */
+        /* Rack Health Score Style */
         .health-card {
             background: #222;
             border-radius: 12px;
@@ -91,7 +91,7 @@
             box-shadow: 0 0 25px rgba(0,0,0,0.6);
         }
 
-/* 右下角通知彈窗 */
+/* Bottom-Right Notification Toast */
 .notification {
     position: fixed;
     bottom: 20px;
@@ -125,7 +125,7 @@
 <body>
 <div class="top-bar">
     <div class="menu-btn" onclick="openMenu()">☰</div>
-    <h1 class="title">溫濕度與火焰監控系統</h1>
+    <h1 class="title">Rack Safety Monitoring System</h1>
     <div></div>
 </div>
 
@@ -134,7 +134,7 @@
     <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
     <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
 
-    <!-- 機櫃健康分數 -->
+    <!-- Rack Health Score -->
     <div class="health-card">
         <h3 style="color:#ff9800; margin:0 0 15px 0;">Rack Health Score</h3>
         <div id="healthScore" class="health-score">---</div>
@@ -172,19 +172,19 @@
             <button onclick="closeNotificationsRuleModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
         <div class="input-group">
-            <label>溫度超過 (°C) 時通知</label>
+            <label>Temperature Exceed Notification (°C)</label>
             <input type="number" id="tempThreshold" placeholder="例如 30" step="0.1">
         </div>
         <div class="input-group">
-            <label>濕度高於 (%) 時通知</label>
+            <label>Humidity Exceed Notification (%)</label>
             <input type="number" id="humidThreshold" placeholder="例如 70" step="0.1">
         </div>
         <div class="input-group">
-            <label>通知 Email</label>
+            <label>Notification Email</label>
             <input type="email" id="notifyEmail" placeholder="makmingkit144@gmail.com">
         </div>
         <div class="input-group">
-            <label>冷卻時間（秒）</label>
+            <label>Cooling Time (seconds)</label>
             <input type="number" id="cooldownSeconds" placeholder="例如 300" value="300" min="60">
         </div>
         <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存規則</button>
