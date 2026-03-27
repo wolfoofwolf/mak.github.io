@@ -139,7 +139,7 @@
         <h3 style="color:#ff9800; margin:0 0 15px 0;">Rack Health Score</h3>
         <div id="healthScore" class="health-score">---</div>
         <div id="healthCircle" class="health-circle">---</div>
-        <p id="healthMessage" style="margin:8px 0 0 0; font-size:18px;">計算中...</p>
+        <p id="healthMessage" style="margin:8px 0 0 0; font-size:18px;">Calculating...</p>
     </div>
 
     <div class="time" id="updateTime">Last updated: loading...</div>
@@ -151,7 +151,7 @@
     </div>
 </div>
 
-<div class="version">Version: v2.8 - 2026/02/25</div>
+<div class="version">Version: v1.60.1 - 2026/02/25</div>
 
 <!-- Sidebar -->
 <div id="sidebar" class="sidebar">
@@ -173,11 +173,11 @@
         </div>
         <div class="input-group">
             <label>Temperature Exceed Notification (°C)</label>
-            <input type="number" id="tempThreshold" placeholder="例如 30" step="0.1">
+            <input type="number" id="tempThreshold" placeholder="For example 30" step="0.1">
         </div>
         <div class="input-group">
             <label>Humidity Exceed Notification (%)</label>
-            <input type="number" id="humidThreshold" placeholder="例如 70" step="0.1">
+            <input type="number" id="humidThreshold" placeholder="For example 70" step="0.1">
         </div>
         <div class="input-group">
             <label>Notification Email</label>
@@ -185,9 +185,9 @@
         </div>
         <div class="input-group">
             <label>Cooling Time (seconds)</label>
-            <input type="number" id="cooldownSeconds" placeholder="例如 300" value="300" min="60">
+            <input type="number" id="cooldownSeconds" placeholder="For example 300" value="300" min="60">
         </div>
-        <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存規則</button>
+        <button onclick="saveNotificationsRule()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">Save Rules</button>
     </div>
 </div>
 
@@ -231,21 +231,21 @@
 <div id="chartsModal" class="actions-modal">
     <div class="chart-modal-content">
         <div class="actions-header">
-            <h2 style="margin:0; color:#ff9800;">數據圖表</h2>
+            <h2 style="margin:0; color:#ff9800;">Data Charts</h2>
             <div style="display: flex; gap: 10px;">
                 <button onclick="updateCharts()" style="background:#4caf50; padding:8px 16px; color:white;">Refresh Data</button>
                 <button onclick="closeChartsModal()" style="background:#f44336; padding:8px 16px;">Close</button>
             </div>
         </div>
         <div class="chart-container">
-            <h4>Field 1 Chart (DHT11 溫度)</h4>
+            <h4>Field 1 Chart (DHT11 Temperature)</h4>
             <iframe id="field1Chart" width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/1?api_key=PKQNQOPCZYREXB6C&bgcolor=%23111111&color=%23ff9800&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Temperature °C&yaxismax=40&yaxismin=10&showlegend=false"></iframe>
         </div>
         <div class="chart-container">
-            <h4>Field 2 Chart (DHT11 濕度)</h4>
+            <h4>Field 2 Chart (DHT11 Humidity)</h4>
             <iframe id="field2Chart" width="100%" height="340" style="border: none; background: #111111;" src="https://thingspeak.com/channels/3252434/charts/2?api_key=PKQNQOPCZYREXB6C&bgcolor=%23111111&color=%234fc3f7&dynamic=true&results=60&timescale=10&type=line&xaxis=Date&yaxis=Humidity&yaxismax=100&yaxismin=0&showlegend=false"></iframe>
         </div>
-        <p style="text-align: center; margin-top: 20px; color: #888;">資料來自 ThingSpeak</p>
+        <p style="text-align: center; margin-top: 20px; color: #888;">Data Source ThingSpeak</p>
     </div>
 </div>
 
@@ -272,21 +272,21 @@
 <div id="securityModal" class="actions-modal">
     <div class="security-content">
         <div class="actions-header">
-            <h2 style="margin:0;">Security 警報設定</h2>
+            <h2 style="margin:0;">Security Security Alert Settings</h2>
             <button onclick="closeSecurityModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
         <div class="input-group">
-            <label>陌生人警報冷卻時間 (秒)</label>
+            <label>Stranger Alert Cooldown Time (seconds)</label>
             <input type="number" id="securityCooldown" value="60" min="10">
-            <small style="color:#888;">（避免連續觸發）</small>
+            <small style="color:#888;">(To prevent continuous triggering)</small>
         </div>
-        <button onclick="saveSecuritySetting()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">儲存設定</button>
+        <button onclick="saveSecuritySetting()" style="background:#238636; padding:12px 20px; width:100%; margin-top:20px;">Save Settings</button>
     </div>
 </div>
 
 <script>
 // ==================== 你原本的所有程式碼（完全不變） ====================
-// EmailJS 初始化
+// EmailJS Initialization
 emailjs.init("DesLsbj7IJqknmZFq");
 
 // Log 系統
@@ -302,18 +302,18 @@ function addLog(action, details = "") {
     renderLogList();
 }
 function clearLog() {
-    if (confirm("確定要清除所有日誌嗎？")) {
+    if (confirm("Are you sure you want to clear all logs?")) {
         logEntries = [];
         localStorage.removeItem("systemLog");
         renderLogList();
-        addLog("系統日誌已全部清除");
+        addLog("All system logs have been cleared");
     }
 }
 function renderLogList() {
     const container = document.getElementById("logList");
     let html = "";
     if (logEntries.length === 0) {
-        html = "<p style='color:#888; text-align:center;'>目前沒有日誌</p>";
+        html = "<p style='color:#888; text-align:center;'>No logs currently</p>";
     } else {
         logEntries.forEach(entry => {
             html += `
@@ -347,7 +347,7 @@ function showNotificationsRule() {
   document.getElementById("humidThreshold").value = notificationsRule.humidThreshold || "";
   document.getElementById("notifyEmail").value = notificationsRule.notifyEmail || "";
   document.getElementById("cooldownSeconds").value = notificationsRule.cooldownSeconds || 300;
-  addLog("開啟 Notifications Rule 面板");
+  addLog("Open Notification Rules Panel");
 }
 
 function closeNotificationsRuleModal() {
@@ -366,8 +366,8 @@ function saveNotificationsRule() {
     cooldownSeconds: cooldown ? Number(cooldown) : 300
   };
   localStorage.setItem("notificationsRule", JSON.stringify(notificationsRule));
-  addLog("儲存通知規則", `溫度 > ${temp || '--'} °C, 濕度 > ${humid || '--'} %, Email: ${email}, CD: ${cooldown} 秒`);
-  alert("規則已儲存！");
+  addLog("Save Notification Rules", `Temperature > ${temp || '--'} °C, Humidity > ${humid || '--'} %, Email: ${email}, CD: ${cooldown} seconds`);
+  alert("Rules Saved!");
   closeNotificationsRuleModal();
 }
 
@@ -383,15 +383,15 @@ setInterval(() => {
   let triggered = false;
   let alertMsg = "";
   if (notificationsRule.tempThreshold && temp > notificationsRule.tempThreshold) {
-    alertMsg += `溫度警報！目前 ${temp} °C，已超過設定值 ${notificationsRule.tempThreshold} °C\n`;
+    alertMsg += `Temperature Alert! Currently ${temp} °C，Has exceeded the set value ${notificationsRule.tempThreshold} °C\n`;
     triggered = true;
   }
 if (notificationsRule.humidThreshold && humid > notificationsRule.humidThreshold) {
-    alertMsg += `濕度警報！目前 ${humid} %，已高於設定值 ${notificationsRule.humidThreshold} %\n`;
+    alertMsg += `Humidity Alert! Currently ${humid} %，above the set value ${notificationsRule.humidThreshold} %\n`;
     triggered = true;
 }
   if (triggered) {
-    sendNotificationEmail("環境監控警報", alertMsg);
+    sendNotificationEmail("Environmental Monitoring Alert", alertMsg);
     lastNotificationTime = now;
   }
 }, 20000);
@@ -401,14 +401,14 @@ function sendNotificationEmail(subject, message) {
     to_email: notificationsRule.notifyEmail,
     subject: subject,
     message: message + "\n\n" +
-             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
-             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
-             "火焰狀態: " + document.getElementById('flameDisplay').textContent + "\n" +
-             "時間: " + new Date().toLocaleString('zh-TW')
+             "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "Flame Status: " + document.getElementById('flameDisplay').textContent + "\n" +
+             "Time: " + new Date().toLocaleString('zh-TW')
   }).then(() => {
-    addLog("自動通知發送成功", subject);
+    addLog("Automated Notification Sent Successfully", subject);
   }).catch(err => {
-    addLog("自動通知發送失敗", err.text || err);
+    addLog("Automated Notification Failed to Send", err.text || err);
   });
 }
 
@@ -416,7 +416,7 @@ function sendNotificationEmail(subject, message) {
 function showCharts() {
   closeMenu();
   document.getElementById("chartsModal").style.display = "block";
-  addLog("開啟數據圖表");
+  addLog("Open Data Charts");
 }
 function closeChartsModal() {
   document.getElementById("chartsModal").style.display = "none";
@@ -426,7 +426,7 @@ function updateCharts() {
   const field2 = document.getElementById("field2Chart");
   if (field1) field1.src = field1.src.split('?')[0] + '?' + (field1.src.split('?')[1] || '') + (field1.src.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
   if (field2) field2.src = field2.src.split('?')[0] + '?' + (field2.src.split('?')[1] || '') + (field2.src.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
-  addLog("手動刷新圖表資料");
+  addLog("Manually Refresh Chart Data");
 }
 
 // Actions Modal
@@ -434,7 +434,7 @@ function showActions() {
   closeMenu();
   document.getElementById("actionsModal").style.display = "block";
   renderActionList();
-  addLog("開啟 Actions 面板");
+  addLog("Open Actions Panel");
 }
 function closeActionsModal() {
   document.getElementById("actionsModal").style.display = "none";
@@ -469,8 +469,8 @@ function saveActionEmail() {
   action.fromEmail = from;
   action.toEmail = to;
   saveActions();
-  addLog("更新 Email 設定", `Action: ${action.name} | From: ${from} | To: ${to}`);
-  alert("Email 設定已儲存");
+  addLog("Update Email Setting", `Action: ${action.name} | From: ${from} | To: ${to}`);
+  alert("Email Setting Saved");
   closeEditEmailModal();
 }
 
@@ -499,22 +499,22 @@ function renderActionList() {
   document.getElementById("actionList").innerHTML = html;
 }
 function addSNMPTrap() {
-  const name = prompt("輸入 SNMP Trap Action 名稱:", "SNMP Trap Action " + (actions.length + 1));
+  const name = prompt("Enter SNMP Trap Action Name:", "SNMP Trap Action " + (actions.length + 1));
   if (name) {
     const newAction = { id: Date.now(), type:"SNMP Trap", name, fromEmail: "", toEmail: "" };
     actions.push(newAction);
     saveActions();
     renderActionList();
-    addLog("新增 Action", name);
+    addLog("Add Action", name);
   }
 }
 function deleteAction(id) {
-  if (confirm("確定要刪除嗎？")) {
+  if (confirm("Are you sure you want to delete?")) {
     const action = actions.find(a => a.id === id);
     actions = actions.filter(a => a.id !== id);
     saveActions();
     renderActionList();
-    addLog("刪除 Action", action ? action.name : "未知");
+    addLog("Delete Action", action ? action.name : "Unknown");
   }
 }
 function duplicateAction(id) {
@@ -523,36 +523,36 @@ function duplicateAction(id) {
     actions.push({
       id: Date.now(),
       type: action.type,
-      name: action.name + " (複製)",
+      name: action.name + " (Copy)",
       fromEmail: action.fromEmail,
       toEmail: action.toEmail
     });
     saveActions();
     renderActionList();
-    addLog("複製 Action", action.name);
+    addLog("Copy Action", action.name);
   }
 }
 function testAction(id) {
   const action = actions.find(a => a.id === id);
-  const toEmail = action.toEmail || prompt("輸入收件人 Email:", "makmingkit144@gmail.com");
+  const toEmail = action.toEmail || prompt("Enter Recipient Email:", "makmingkit144@gmail.com");
   if (!toEmail) return;
-  addLog("測試 Action - 準備發送 Email", `Action: ${action.name} | 收件人: ${toEmail}`);
+  addLog("Test Action - Preparing to Send Email", `Action: ${action.name} | addressee: ${toEmail}`);
   emailjs.send("FYP", "FYP", {
     to_email: toEmail,
-    subject: "SNMP Trap Alert: " + action.name + " (測試)",
+    subject: "SNMP Trap Alert: " + action.name + " (Test)",
     action_name: action.name,
     action_type: action.type,
     time: new Date().toLocaleString('zh-TW'),
-    message: "這是一封測試通知。\n\n" +
-             "溫度: " + document.getElementById('tempDisplay').textContent + "\n" +
-             "濕度: " + document.getElementById('humidDisplay').textContent + "\n" +
-             "火焰狀態: " + document.getElementById('flameDisplay').textContent
+    message: "This is a Test Notification。\n\n" +
+             "Temperature: " + document.getElementById('tempDisplay').textContent + "\n" +
+             "Humidity: " + document.getElementById('humidDisplay').textContent + "\n" +
+             "Flame Status: " + document.getElementById('flameDisplay').textContent
   }).then(() => {
-    addLog("Email 發送成功", `測試 Action: ${action.name} → ${toEmail}`);
-    alert("測試 Email 已發送到 " + toEmail);
+    addLog("Email Sent Successfully", `Test Action: ${action.name} → ${toEmail}`);
+    alert("Test Email Has Been Sent" + toEmail);
   }).catch((err) => {
-    addLog("Email 發送失敗", `錯誤: ${err.text || err}`);
-    alert("發送失敗: " + (err.text || err));
+    addLog("Email Failed to Send", `Error: ${err.text || err}`);
+    alert("Send Failed: " + (err.text || err));
   });
 }
 
