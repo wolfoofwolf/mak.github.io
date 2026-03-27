@@ -558,7 +558,7 @@ function testAction(id) {
 
 // ==================== 其他功能 ====================
 function updateData() {
-  addLog("手動刷新資料");
+  addLog("Manually Refresh Chart Data");
   fetch(`https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}`)
     .then(r => r.json())
     .then(d => {
@@ -602,10 +602,10 @@ function controlLed(type, state) {
       return response.text();
     })
     .then(text => {
-      console.log("LED 控制成功:", text);
+      console.log("LED Control Successful:", text);
     })
     .catch(err => {
-      console.error("LED 控制失敗:", err);
+      console.error("LED Control Failed:", err);
     });
 }
 
@@ -615,7 +615,7 @@ const readAPIKey = "PKQNQOPCZYREXB6C";
 const espIP = "http://192.168.1.148";
 
 setInterval(() => {
-  addLog("自動刷新資料 (每 20 秒)");
+  addLog("Auto Refresh Data (every 20 seconds)");
   updateData();
 }, 20000);
 
@@ -629,7 +629,7 @@ function updateHealthScore() {
 
     const temp = parseFloat(tempText.match(/\d+\.\d+/)?.[0] || 25);
     const humid = parseFloat(humidText.match(/\d+\.\d+/)?.[0] || 50);
-    const hasFlame = flameText.includes("Detected") || flameText.includes("有火焰");
+    const hasFlame = flameText.includes("Detected") || flameText.includes("There is flame");
 
     let score = 100;
 
@@ -649,13 +649,13 @@ function updateHealthScore() {
     score = Math.max(0, Math.min(100, Math.round(score)));
 
     let color = "#4caf50";
-    let message = "正常";
+    let message = "Normal";
     if (score < 60) {
         color = "#f44336";
-        message = "危險！請立即檢查";
+        message = "Danger! Please check immediately";
     } else if (score < 80) {
         color = "#ff9800";
-        message = "注意！環境異常";
+        message = "Warning! Environmental Anomaly";
     }
 
     document.getElementById("healthScore").textContent = score;
@@ -672,7 +672,7 @@ function showSecurity() {
     closeMenu();
     document.getElementById("securityModal").style.display = "block";
     document.getElementById("securityCooldown").value = securityCooldown;
-    addLog("開啟 Security 警報設定", "調整陌生人警報冷卻時間");
+    addLog("Open Security Alert Settings", "Adjust Stranger Alert Cooldown Time");
 }
 
 function closeSecurityModal() {
@@ -681,30 +681,30 @@ function closeSecurityModal() {
 
 function saveSecuritySetting() {
     securityCooldown = parseInt(document.getElementById("securityCooldown").value) || 60;
-    alert("Security 冷卻時間已設定為 " + securityCooldown + " 秒");
+    alert("Security Cooldown Time Has Been Set To " + securityCooldown + "Seconds");
     closeSecurityModal();
-    addLog("儲存 Security 設定", `冷卻時間更新為 ${securityCooldown} 秒`);
+    addLog("Save Security Settings", `Cooldown Time Updated To ${securityCooldown} Seconds`);
 }
 
 function showSecurityAlert() {
     const notify = document.getElementById("securityNotification");
-    document.getElementById("notifyText").innerHTML = "門被開啟 + 陌生人入侵！";
+    document.getElementById("notifyText").innerHTML = "Door Opened + Stranger Intrusion!";
     notify.style.display = "block";
     setTimeout(() => { notify.style.display = "none"; }, 5000);
-    addLog("🚨 Security 警報觸發", "右下角通知彈窗已顯示");
+    addLog("🚨 Security Alert Triggered", "Bottom-Right Notification Toast Displayed");
 }
 
 // ==================== 最終加強版接收 Flask 陌生人警報（每 0.3 秒檢查 + Key） ====================
 setInterval(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    console.log("🔍 檢查中... alert=" + urlParams.get('alert') + " key=" + urlParams.get('key'));
+    console.log("🔍 Checking... alert=" + urlParams.get('alert') + " key=" + urlParams.get('key'));
 
     if (urlParams.has('alert') && urlParams.get('alert') === 'stranger' && urlParams.get('key') === 'maksecret123') {
-        console.log("🎉 抓到正確 Key + 警報！");
+        console.log("🎉 Correct Key Detected + Alert！");
         showSecurityAlert();
         window.history.replaceState({}, document.title, window.location.pathname);
     } else {
-        console.log("⏳ 目前沒有正確 Key（正常輪詢中...）");
+        console.log("⏳ No Correct Key Currently (Normal Polling...)");
     }
 }, 300);
 
@@ -722,7 +722,7 @@ setInterval(() => {
                 const cooldownSeconds = parseInt(document.getElementById("securityCooldown").value) || 60;
 
                 if (now - lastAlertTime > cooldownSeconds * 1000) {
-                    console.log("🎉 警報觸發！彈窗 + 清除旗標");
+                    console.log("🎉 Alert Triggered! Toast + Clear Flag");
                     showSecurityAlert();
                     lastAlertTime = now;
 
@@ -731,22 +731,22 @@ setInterval(() => {
                 }
             }
         })
-        .catch(err => console.error("❌ 讀取失敗", err));
+        .catch(err => console.error("❌ Read Failed", err));
 }, 800);  // 每 0.8 秒檢查一次（更快更穩）
     
 </script>
 
 <!-- 右下角通知彈窗 -->
 <div id="securityNotification" class="notification">
-    <strong>🚨 警報！</strong><br>
-    <span id="notifyText">門被開啟 + 陌生人入侵！</span>
+    <strong>🚨 Alert！</strong><br>
+    <span id="notifyText">Door Opened + Stranger Intrusion! </span>
 </div>
 
 <!-- ==================== 最新陌生人照片 Modal ==================== -->
 <div id="strangerPhotoModal" class="actions-modal">
     <div class="actions-content" style="max-width: 700px; text-align:center;">
         <div class="actions-header">
-            <h2 style="margin:0;">最新陌生人照片</h2>
+            <h2 style="margin:0;">Latest Stranger Photo</h2>
             <button onclick="closeStrangerPhotoModal()" style="background:#f44336; padding:8px 16px;">Close</button>
         </div>
         <img id="strangerPhotoImg" 
@@ -755,22 +755,22 @@ setInterval(() => {
                 style="margin-top:15px; background:#4caf50; padding:12px 28px; border:none; border-radius:6px; color:white; font-weight:bold;">
             🔄 Reload Photo
         </button>
-        <p style="color:#888; margin-top:10px;">這是 Flask 剛拍到的最新陌生人照片</p>
+        <p style="color:#888; margin-top:10px;">This is the latest stranger photo just captured by Flask</p>
     </div>
 </div>
 
 <script>
 function reloadStrangerPhoto() {
-    console.log("🔄 Reload Photo 被點擊");
+    console.log("🔄 Reload Photo Clicked");
     const img = document.getElementById("strangerPhotoImg");
     img.src = "http://192.168.1.25:5000/latest_stranger.jpg?t=" + Date.now();
-    addLog("🔄 重新載入陌生人照片", "正在從 Flask 伺服器更新最新影像");
+    addLog("🔄 Reload Stranger Photo", "Updating Latest Image from Flask Serve");
 }
 
 function showLatestStrangerPhoto() {
     document.getElementById("strangerPhotoModal").style.display = "block";
     reloadStrangerPhoto();
-    addLog("📸 開啟 Latest Stranger 照片", "查看 Flask 剛拍到的陌生人入侵影像");
+    addLog("📸 Open Latest Stranger Photo", "View Stranger Intrusion Image Just Captured by Flask");
 }
 
 function closeStrangerPhotoModal() {
