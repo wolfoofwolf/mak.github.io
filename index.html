@@ -16,6 +16,8 @@
         .humid { color: #4fc3f7; }
         .flame-normal { background: #222; color: #4caf50; }
         .flame-alert { background: #b71c1c; color: white; font-weight: bold; }
+        .door-open { background: #222; color: #4caf50; }     /* 門開 = 綠色 */
+        .door-closed { background: #b71c1c; color: white; font-weight: bold; }   /* 門關 = 紅色 */
         .time { font-size: 0.9rem; color: #888; margin-top: 20px; }
         .buttons { display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
         button { padding: 12px 24px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background: #333; color: white; transition: all 0.2s; }
@@ -133,6 +135,7 @@
     <div class="data-box"><span class="temp" id="tempDisplay">Temperature: -- °C 🌡️</span></div>
     <div class="data-box"><span class="humid" id="humidDisplay">Humidity: -- % 💧</span></div>
     <div class="data-box" id="flameBox"><span id="flameDisplay">Flame Status: -- 🔥</span></div>
+    <div class="data-box" id="doorBox"><span id="doorDisplay">Door Status: -- 🚪</span></div>
 
     <!-- Rack Health Score -->
     <div class="health-card">
@@ -587,6 +590,22 @@ function updateData() {
       document.getElementById('flameDisplay').textContent = `Flame Status: ${text}`;
       document.getElementById('flameBox').className = 'data-box ' + cls;
     });
+        // ==================== 新增：Door Status (Field 5) ====================
+    fetch(`https://api.thingspeak.com/channels/3252434/fields/5/last.json?api_key=PKQNQOPCZYREXB6C`)
+        .then(r => r.json()).then(d => {
+            const door = d.field5;
+            let text = '--';
+            let cls = '';
+            if (door == 0) {
+                text = "Door Closed 🚪";
+                cls = 'door-closed';
+            } else if (door == 1) {
+                text = "Door Open ✅";
+                cls = 'door-open';
+            }
+            document.getElementById('doorDisplay').textContent = `Door Status: ${text}`;
+            document.getElementById('doorBox').className = `data-box ${cls}`;
+        });
   document.getElementById('updateTime').textContent =
     `Last updated: ${new Date().toLocaleString('zh-TW')}`;
 
