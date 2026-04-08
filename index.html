@@ -631,7 +631,7 @@ function controlLed(type, state) {
 // Auto update
 const channelID = 3252434;
 const readAPIKey = "PKQNQOPCZYREXB6C";
-const espIP = "http://192.168.0.160";
+const espIP = "http://192.168.1.170";
 
 setInterval(() => {
   addLog("Auto Refresh Data (every 20 seconds)");
@@ -782,7 +782,7 @@ setInterval(() => {
 function reloadStrangerPhoto() {
     console.log("🔄 Reload Photo Clicked");
     const img = document.getElementById("strangerPhotoImg");
-    img.src = "http://192.168.0.123:5000/latest_stranger.jpg?t=" + Date.now();
+    img.src = "http://192.168.1.147:5000/latest_stranger.jpg?t=" + Date.now();
     addLog("🔄 Reload Stranger Photo", "Updating Latest Image from Flask Serve");
 }
 
